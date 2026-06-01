@@ -115,6 +115,21 @@
   }
   .btn-report:active { opacity: 0.8; }
 
+  .btn-import {
+    background: #5856d6;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    width: 100%;
+    height: 52px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: opacity 0.15s;
+  }
+  .btn-import:active { opacity: 0.8; }
+
   .btn-reset {
     background: #ff3b30;
     color: white;
@@ -163,6 +178,21 @@
   }
   .log-delete-btn:active { color: #ff3b30; background: #fff0f0; }
   .no-log { font-size: 13px; color: #c7c7cc; text-align: center; padding: 10px; }
+
+  .btn-more {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #007aff;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 0 2px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn-more:active { opacity: 0.6; }
+
+  #file-input { display: none; }
 </style>
 </head>
 <body>
@@ -236,13 +266,18 @@
   </div>
 </div>
 
-<button class="btn-report" onclick="exportExcel()">📥 엑셀 리포트 다운로드</button>
+<button class="btn-report" onclick="exportExcel()">📥 엑셀 백업 다운로드</button>
+<button class="btn-import" onclick="document.getElementById('file-input').click()">📤 엑셀 백업 가져오기</button>
+<input type="file" id="file-input" accept=".xlsx" onchange="importExcel(event)">
 <button class="btn-reset" onclick="resetToday()">🗑 오늘 기록 초기화</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const NAMES = { pushup: 'Push-ups', situp: 'Sit-ups', squat: 'Squat' };
+const NAMES_REVERSE = { 'Push-ups': 'pushup', 'Sit-ups': 'situp', 'Squat': 'squat' };
 const STORAGE_KEY = 'workout_log_v2';
+const PREVIEW_COUNT = 5;
+let showAll = false;
 
 function today() {
   const d = new Date();
@@ -278,12 +313,12 @@ function record(ex) {
   if (!all[today()]) all[today()] = [];
   all[today()].push(entry);
   saveAll(all);
+  showAll = false;
   renderStats();
   renderLog();
   flashCard(ex);
 }
 
-// 특정 인덱스의 로그 항목 삭제
 function deleteLog(index) {
   const all = loadAll();
   const key = today();
@@ -316,22 +351,39 @@ function renderStats() {
 function renderLog() {
   const logs = todayLogs();
   const el = document.getElementById('log-list');
+
   if (logs.length === 0) {
     el.innerHTML = '<div class="no-log">아직 기록이 없어요</div>';
     return;
   }
-  // 역순으로 표시하되 원래 인덱스를 유지해서 삭제 시 정확한 위치 참조
-  el.innerHTML = [...logs].map((l, i) => ({ ...l, origIndex: i }))
-    .reverse()
-    .map(l =>
-      `<div class="log-item">
-        <div class="log-left">
-          <span>${NAMES[l.exercise]} ${l.count}개</span>
-          <span class="log-time">${l.time}</span>
-        </div>
-        <button class="log-delete-btn" onclick="deleteLog(${l.origIndex})" title="이 기록 삭제">🗑</button>
-      </div>`
-    ).join('');
+
+  const reversed = [...logs].map((l, i) => ({ ...l, origIndex: i })).reverse();
+  const visible = showAll ? reversed : reversed.slice(0, PREVIEW_COUNT);
+  const hiddenCount = reversed.length - PREVIEW_COUNT;
+
+  const itemsHTML = visible.map(l =>
+    `<div class="log-item">
+      <div class="log-left">
+        <span>${NAMES[l.exercise]} ${l.count}개</span>
+        <span class="log-time">${l.time}</span>
+      </div>
+      <button class="log-delete-btn" onclick="deleteLog(${l.origIndex})" title="이 기록 삭제">🗑</button>
+    </div>`
+  ).join('');
+
+  let moreHTML = '';
+  if (!showAll && hiddenCount > 0) {
+    moreHTML = `<button class="btn-more" onclick="toggleShowAll()">▼ 이전 기록 ${hiddenCount}개 더 보기</button>`;
+  } else if (showAll && reversed.length > PREVIEW_COUNT) {
+    moreHTML = `<button class="btn-more" onclick="toggleShowAll()">▲ 접기</button>`;
+  }
+
+  el.innerHTML = itemsHTML + moreHTML;
+}
+
+function toggleShowAll() {
+  showAll = !showAll;
+  renderLog();
 }
 
 function resetToday() {
@@ -339,6 +391,7 @@ function resetToday() {
   const all = loadAll();
   delete all[today()];
   saveAll(all);
+  showAll = false;
   renderStats();
   renderLog();
 }
@@ -352,7 +405,6 @@ function exportExcel() {
 
   const wb = XLSX.utils.book_new();
 
-  // Sheet 1: 상세 로그
   const detailRows = [['날짜', '운동', '횟수', '시간']];
   Object.keys(all).sort().forEach(date => {
     (all[date] || []).forEach(l => {
@@ -363,7 +415,6 @@ function exportExcel() {
   wsDetail['!cols'] = [{wch:12},{wch:12},{wch:8},{wch:12}];
   XLSX.utils.book_append_sheet(wb, wsDetail, '상세 기록');
 
-  // Sheet 2: 일별 요약
   const summaryRows = [['날짜', 'Push-ups', 'Sit-ups', 'Squat', '총합']];
   Object.keys(all).sort().forEach(date => {
     const logs = all[date] || [];
@@ -380,10 +431,73 @@ function exportExcel() {
   XLSX.writeFile(wb, filename);
 }
 
-// 날짜 표시
-document.getElementById('today-date').textContent = fmt(new Date());
+function importExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
 
-// 초기 렌더
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+
+      // "상세 기록" 시트 읽기
+      const ws = wb.Sheets['상세 기록'];
+      if (!ws) {
+        alert('올바른 백업 파일이 아닙니다.\n"상세 기록" 시트를 찾을 수 없어요.');
+        return;
+      }
+
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      // 첫 행은 헤더(날짜, 운동, 횟수, 시간) → 스킵
+      const dataRows = rows.slice(1).filter(r => r.length >= 3);
+
+      if (dataRows.length === 0) {
+        alert('가져올 데이터가 없습니다.');
+        return;
+      }
+
+      // 기존 데이터와 병합
+      const existing = loadAll();
+      let importedCount = 0;
+
+      dataRows.forEach(row => {
+        const date = String(row[0] || '').trim();
+        const exName = String(row[1] || '').trim();
+        const count = parseInt(row[2], 10);
+        const time = String(row[3] || '').trim();
+
+        const exKey = NAMES_REVERSE[exName];
+        if (!date || !exKey || isNaN(count)) return;
+
+        if (!existing[date]) existing[date] = [];
+
+        // 중복 방지: 같은 날짜+운동+횟수+시간이 이미 있으면 스킵
+        const isDuplicate = existing[date].some(
+          l => l.exercise === exKey && l.count === count && l.time === time
+        );
+        if (!isDuplicate) {
+          existing[date].push({ exercise: exKey, count, time, ts: 0 });
+          importedCount++;
+        }
+      });
+
+      saveAll(existing);
+      showAll = false;
+      renderStats();
+      renderLog();
+
+      alert(`✅ 가져오기 완료!\n${importedCount}개 기록을 복구했습니다.`);
+    } catch(err) {
+      alert('파일을 읽는 중 오류가 발생했습니다.\n올바른 백업 파일인지 확인해 주세요.');
+    }
+
+    // 파일 입력 초기화 (같은 파일 재선택 가능하게)
+    event.target.value = '';
+  };
+  reader.readAsBinaryString(file);
+}
+
+document.getElementById('today-date').textContent = fmt(new Date());
 renderStats();
 renderLog();
 </script>
