@@ -270,7 +270,9 @@ function today() {
   return new Date().toISOString().split('T')[0];
 }
 function fmt(d) {
-  return new Intl.DateTimeFormat('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' }).format(d);
+  const parts = new Intl.DateTimeFormat('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' }).formatToParts(d);
+  const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+  return `${map.year}${map.month}${map.day} ${map.weekday}요일`;
 }
 function timeStr() {
   return new Date().toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
