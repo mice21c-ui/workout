@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="운동 기록">
+<title>💪 운동 기록</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    background: #f2f2f7;
+    min-height: 100vh;
+    padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 16px);
+    padding-top: max(env(safe-area-inset-top, 20px), 20px);
+  }
+
+  .header {
+    text-align: center;
+    padding: 16px 0 12px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; color: #1c1c1e; }
+  .header .date { font-size: 14px; color: #8e8e93; margin-top: 4px; }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .exercise-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1c1c1e;
+    margin-bottom: 12px;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .count-input {
+    width: 70px;
+    height: 44px;
+    border: 1.5px solid #d1d1d6;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    color: #1c1c1e;
+    background: #f9f9f9;
+    -webkit-appearance: none;
+    outline: none;
+  }
+  .count-input:focus { border-color: #007aff; background: white; }
+
+  .done-btn {
+    background: #34c759;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    height: 44px;
+    padding: 0 18px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  .done-btn:active { opacity: 0.75; transform: scale(0.97); }
+
+  .stats {
+    flex: 1;
+    background: #f2f2f7;
+    border-radius: 10px;
+    padding: 6px 10px;
+    text-align: center;
+  }
+  .stats-label { font-size: 11px; color: #8e8e93; }
+  .stats-value { font-size: 18px; font-weight: 700; color: #1c1c1e; }
+  .stats-sub { font-size: 11px; color: #8e8e93; margin-top: 1px; }
+
+  .summary-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .summary-title { font-size: 15px; font-weight: 600; color: #8e8e93; margin-bottom: 10px; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .summary-item { text-align: center; background: #f2f2f7; border-radius: 10px; padding: 10px 6px; }
+  .summary-item .num { font-size: 22px; font-weight: 700; color: #007aff; }
+  .summary-item .lbl { font-size: 11px; color: #8e8e93; margin-top: 2px; }
+
+  .btn-report {
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    width: 100%;
+    height: 52px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: opacity 0.15s;
+  }
+  .btn-report:active { opacity: 0.8; }
+
+  .btn-reset {
+    background: #ff3b30;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    width: 100%;
+    height: 44px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-reset:active { opacity: 0.8; }
+
+  .log-section { margin-top: 6px; }
+  .log-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #8e8e93;
+    margin-bottom: 8px;
+  }
+  .log-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #3a3a3c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .log-item .log-time { color: #8e8e93; font-size: 12px; }
+  .no-log { font-size: 13px; color: #c7c7cc; text-align: center; padding: 10px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💪 오늘의 운동</h1>
+  <div class="date" id="today-date"></div>
+</div>
+
+<div class="card" id="card-pushup">
+  <div class="exercise-title">🤲 Push-ups</div>
+  <div class="controls">
+    <input class="count-input" type="number" id="val-pushup" value="30" min="1" max="999" inputmode="numeric">
+    <button class="done-btn" onclick="record('pushup')">완료 ✓</button>
+    <div class="stats">
+      <div class="stats-label">완료 횟수</div>
+      <div class="stats-value" id="sets-pushup">0</div>
+      <div class="stats-sub" id="total-pushup">총 0개</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="card-situp">
+  <div class="exercise-title">🧘 Sit-ups</div>
+  <div class="controls">
+    <input class="count-input" type="number" id="val-situp" value="30" min="1" max="999" inputmode="numeric">
+    <button class="done-btn" onclick="record('situp')">완료 ✓</button>
+    <div class="stats">
+      <div class="stats-label">완료 횟수</div>
+      <div class="stats-value" id="sets-situp">0</div>
+      <div class="stats-sub" id="total-situp">총 0개</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="card-squat">
+  <div class="exercise-title">🦵 Squat</div>
+  <div class="controls">
+    <input class="count-input" type="number" id="val-squat" value="30" min="1" max="999" inputmode="numeric">
+    <button class="done-btn" onclick="record('squat')">완료 ✓</button>
+    <div class="stats">
+      <div class="stats-label">완료 횟수</div>
+      <div class="stats-value" id="sets-squat">0</div>
+      <div class="stats-sub" id="total-squat">총 0개</div>
+    </div>
+  </div>
+</div>
+
+<div class="summary-card">
+  <div class="summary-title">📊 오늘 총계</div>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="num" id="sum-pushup">0</div>
+      <div class="lbl">Push-ups</div>
+    </div>
+    <div class="summary-item">
+      <div class="num" id="sum-situp">0</div>
+      <div class="lbl">Sit-ups</div>
+    </div>
+    <div class="summary-item">
+      <div class="num" id="sum-squat">0</div>
+      <div class="lbl">Squat</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="log-section">
+    <div class="log-title">🕐 기록 로그</div>
+    <div id="log-list"><div class="no-log">아직 기록이 없어요</div></div>
+  </div>
+</div>
+
+<button class="btn-report" onclick="exportExcel()">📥 엑셀 리포트 다운로드</button>
+<button class="btn-reset" onclick="resetToday()">🗑 오늘 기록 초기화</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const NAMES = { pushup: 'Push-ups', situp: 'Sit-ups', squat: 'Squat' };
+const STORAGE_KEY = 'workout_log_v2';
+
+function today() {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+
+function fmt(d) {
+  return new Intl.DateTimeFormat('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' }).format(d);
+}
+
+function timeStr() {
+  return new Date().toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function saveAll(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function todayLogs() {
+  const all = loadAll();
+  return all[today()] || [];
+}
+
+function record(ex) {
+  const val = parseInt(document.getElementById('val-' + ex).value, 10);
+  if (!val || val < 1) { alert('횟수를 1 이상으로 입력해 주세요.'); return; }
+  const entry = { exercise: ex, count: val, time: timeStr(), ts: Date.now() };
+  const all = loadAll();
+  if (!all[today()]) all[today()] = [];
+  all[today()].push(entry);
+  saveAll(all);
+  renderStats();
+  renderLog();
+  flashCard(ex);
+}
+
+function flashCard(ex) {
+  const card = document.getElementById('card-' + ex);
+  card.style.transition = 'background 0.1s';
+  card.style.background = '#e8fbe8';
+  setTimeout(() => { card.style.background = 'white'; }, 600);
+}
+
+function renderStats() {
+  const logs = todayLogs();
+  ['pushup','situp','squat'].forEach(ex => {
+    const mine = logs.filter(l => l.exercise === ex);
+    const total = mine.reduce((s, l) => s + l.count, 0);
+    document.getElementById('sets-' + ex).textContent = mine.length + '회';
+    document.getElementById('total-' + ex).textContent = '총 ' + total + '개';
+    document.getElementById('sum-' + ex).textContent = total;
+  });
+}
+
+function renderLog() {
+  const logs = todayLogs();
+  const el = document.getElementById('log-list');
+  if (logs.length === 0) {
+    el.innerHTML = '<div class="no-log">아직 기록이 없어요</div>';
+    return;
+  }
+  el.innerHTML = [...logs].reverse().map(l =>
+    `<div class="log-item">
+      <span>${NAMES[l.exercise]} ${l.count}개</span>
+      <span class="log-time">${l.time}</span>
+    </div>`
+  ).join('');
+}
+
+function resetToday() {
+  if (!confirm('오늘 기록을 초기화할까요?')) return;
+  const all = loadAll();
+  delete all[today()];
+  saveAll(all);
+  renderStats();
+  renderLog();
+}
+
+function exportExcel() {
+  const all = loadAll();
+  if (Object.keys(all).length === 0) {
+    alert('기록이 없습니다. 운동을 기록한 후 다운로드해 주세요.');
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: 상세 로그
+  const detailRows = [['날짜', '운동', '횟수', '시간']];
+  Object.keys(all).sort().forEach(date => {
+    (all[date] || []).forEach(l => {
+      detailRows.push([date, NAMES[l.exercise], l.count, l.time]);
+    });
+  });
+  const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
+  wsDetail['!cols'] = [{wch:12},{wch:12},{wch:8},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, wsDetail, '상세 기록');
+
+  // Sheet 2: 일별 요약
+  const summaryRows = [['날짜', 'Push-ups', 'Sit-ups', 'Squat', '총합']];
+  Object.keys(all).sort().forEach(date => {
+    const logs = all[date] || [];
+    const pu = logs.filter(l=>l.exercise==='pushup').reduce((s,l)=>s+l.count,0);
+    const su = logs.filter(l=>l.exercise==='situp').reduce((s,l)=>s+l.count,0);
+    const sq = logs.filter(l=>l.exercise==='squat').reduce((s,l)=>s+l.count,0);
+    summaryRows.push([date, pu, su, sq, pu+su+sq]);
+  });
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+  wsSummary['!cols'] = [{wch:12},{wch:12},{wch:12},{wch:12},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, wsSummary, '일별 요약');
+
+  const filename = 'workout_' + today() + '.xlsx';
+  XLSX.writeFile(wb, filename);
+}
+
+// 날짜 표시
+document.getElementById('today-date').textContent = fmt(new Date());
+
+// 초기 렌더
+renderStats();
+renderLog();
+</script>
+</body>
+</html>
