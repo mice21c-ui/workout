@@ -299,6 +299,9 @@ function record(ex) {
 function deleteLog(index) {
   const all = loadAll(); const key = today();
   if (!all[key]) return;
+  const entry = all[key][index];
+  if (!entry) return;
+  if (!confirm(`"${NAMES[entry.exercise]} ${entry.count}개" 기록을 삭제할까요?`)) return;
   all[key].splice(index, 1);
   if (all[key].length === 0) delete all[key];
   saveAll(all);
