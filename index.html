@@ -66,7 +66,7 @@
   .summary-title { font-size: 15px; font-weight: 600; color: #8e8e93; margin-bottom: 10px; }
   .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .summary-item { text-align: center; background: #f2f2f7; border-radius: 10px; padding: 10px 6px; }
-  .summary-item .num { font-size: 22px; font-weight: 700; color: #007aff; }
+  .summary-item .num { font-size: 22px; font-weight: 700; color: #ff3b30; transition: color 0.4s; }
   .summary-item .lbl { font-size: 11px; color: #8e8e93; margin-top: 2px; }
 
   /* 그래프 카드 */
@@ -271,7 +271,7 @@ function today() {
 function fmt(d) {
   const parts = new Intl.DateTimeFormat('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' }).formatToParts(d);
   const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
-  return `${map.year} ${map.month} ${map.day} ${map.weekday}요일`;
+  return `${map.year}년 ${map.month} ${map.day} ${map.weekday}요일`;
 }
 function timeStr() {
   return new Date().toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
@@ -316,6 +316,17 @@ function flashCard(ex) {
   setTimeout(() => { card.style.background = 'white'; }, 600);
 }
 
+function getScaleColor(total) {
+  // 0~300개, 30개마다 1단계 (0~10단계)
+  const step = Math.min(Math.floor(total / 30), 10);
+  const ratio = step / 10; // 0.0 ~ 1.0
+  // 빨간(255,59,48) → 주황 → 그린(52,199,89)
+  const r = Math.round(255 + (52  - 255) * ratio);
+  const g = Math.round(59  + (199 - 59)  * ratio);
+  const b = Math.round(48  + (89  - 48)  * ratio);
+  return `rgb(${r},${g},${b})`;
+}
+
 function renderStats() {
   const logs = todayLogs();
   ['pushup','situp','squat'].forEach(ex => {
@@ -323,7 +334,9 @@ function renderStats() {
     const total = mine.reduce((s, l) => s + l.count, 0);
     document.getElementById('sets-' + ex).textContent = mine.length + '회';
     document.getElementById('total-' + ex).textContent = '총 ' + total + '개';
-    document.getElementById('sum-' + ex).textContent = total;
+    const numEl = document.getElementById('sum-' + ex);
+    numEl.textContent = total;
+    numEl.style.color = getScaleColor(total);
   });
 }
 
