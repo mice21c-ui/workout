@@ -146,8 +146,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
   }
+  .log-item .log-left { display: flex; align-items: center; gap: 8px; flex: 1; }
   .log-item .log-time { color: #8e8e93; font-size: 12px; }
+  .log-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 4px;
+    border-radius: 6px;
+    color: #c7c7cc;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .log-delete-btn:active { color: #ff3b30; background: #fff0f0; }
   .no-log { font-size: 13px; color: #c7c7cc; text-align: center; padding: 10px; }
 </style>
 </head>
@@ -269,6 +283,18 @@ function record(ex) {
   flashCard(ex);
 }
 
+// 특정 인덱스의 로그 항목 삭제
+function deleteLog(index) {
+  const all = loadAll();
+  const key = today();
+  if (!all[key]) return;
+  all[key].splice(index, 1);
+  if (all[key].length === 0) delete all[key];
+  saveAll(all);
+  renderStats();
+  renderLog();
+}
+
 function flashCard(ex) {
   const card = document.getElementById('card-' + ex);
   card.style.transition = 'background 0.1s';
@@ -294,12 +320,18 @@ function renderLog() {
     el.innerHTML = '<div class="no-log">아직 기록이 없어요</div>';
     return;
   }
-  el.innerHTML = [...logs].reverse().map(l =>
-    `<div class="log-item">
-      <span>${NAMES[l.exercise]} ${l.count}개</span>
-      <span class="log-time">${l.time}</span>
-    </div>`
-  ).join('');
+  // 역순으로 표시하되 원래 인덱스를 유지해서 삭제 시 정확한 위치 참조
+  el.innerHTML = [...logs].map((l, i) => ({ ...l, origIndex: i }))
+    .reverse()
+    .map(l =>
+      `<div class="log-item">
+        <div class="log-left">
+          <span>${NAMES[l.exercise]} ${l.count}개</span>
+          <span class="log-time">${l.time}</span>
+        </div>
+        <button class="log-delete-btn" onclick="deleteLog(${l.origIndex})" title="이 기록 삭제">🗑</button>
+      </div>`
+    ).join('');
 }
 
 function resetToday() {
