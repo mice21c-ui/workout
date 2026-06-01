@@ -253,7 +253,6 @@
 <button class="btn-report" onclick="exportExcel()">📥 엑셀 백업 다운로드</button>
 <button class="btn-import" onclick="document.getElementById('file-input').click()">📤 엑셀 백업 가져오기</button>
 <input type="file" id="file-input" accept=".xlsx" onchange="importExcel(event)">
-<button class="btn-reset" onclick="resetToday()">🗑 오늘 기록 초기화</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -272,7 +271,7 @@ function today() {
 function fmt(d) {
   const parts = new Intl.DateTimeFormat('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' }).formatToParts(d);
   const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
-  return `${map.year}${map.month}${map.day} ${map.weekday}요일`;
+  return `${map.year} ${map.month} ${map.day} ${map.weekday}요일`;
 }
 function timeStr() {
   return new Date().toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
