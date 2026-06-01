@@ -243,10 +243,14 @@
   </div>
 </div>
 
+
 <div class="card">
   <div class="log-section">
-    <div class="log-title">🕐 기록 로그</div>
-    <div id="log-list"><div class="no-log">아직 기록이 없어요</div></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <div class="log-title" style="margin-bottom:0">🕐 기록 로그</div>
+      <button class="btn-more" style="padding:0; width:auto;" onclick="toggleShowAll()">더보기</button>
+    </div>
+    <div id="log-list" style="display:none"></div>
   </div>
 </div>
 
@@ -343,23 +347,24 @@ function renderStats() {
 function renderLog() {
   const logs = todayLogs();
   const el = document.getElementById('log-list');
+  if (!showAll) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
   if (logs.length === 0) { el.innerHTML = '<div class="no-log">아직 기록이 없어요</div>'; return; }
   const reversed = [...logs].map((l, i) => ({ ...l, origIndex: i })).reverse();
-  const visible = showAll ? reversed : reversed.slice(0, PREVIEW_COUNT);
-  const hiddenCount = reversed.length - PREVIEW_COUNT;
-  const itemsHTML = visible.map(l =>
+  el.innerHTML = reversed.map(l =>
     `<div class="log-item">
       <div class="log-left"><span>${NAMES[l.exercise]} ${l.count}개</span><span class="log-time">${l.time}</span></div>
       <button class="log-delete-btn" onclick="deleteLog(${l.origIndex})">🗑</button>
     </div>`
   ).join('');
-  let moreHTML = '';
-  if (!showAll && hiddenCount > 0) moreHTML = `<button class="btn-more" onclick="toggleShowAll()">▼ 이전 기록 ${hiddenCount}개 더 보기</button>`;
-  else if (showAll && reversed.length > PREVIEW_COUNT) moreHTML = `<button class="btn-more" onclick="toggleShowAll()">▲ 접기</button>`;
-  el.innerHTML = itemsHTML + moreHTML;
 }
 
-function toggleShowAll() { showAll = !showAll; renderLog(); }
+function toggleShowAll() {
+  showAll = !showAll;
+  const btn = document.querySelector('.log-section .btn-more');
+  if (btn) btn.textContent = showAll ? '접기' : '더보기';
+  renderLog();
+}
 
 function setRange(range) {
   currentRange = range;
