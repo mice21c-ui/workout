@@ -640,7 +640,7 @@ function exportExcel() {
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
   wsSummary['!cols'] = [{wch:12},{wch:12},{wch:12},{wch:12},{wch:10}];
   XLSX.utils.book_append_sheet(wb, wsSummary, '일별 요약');
-  XLSX.writeFile(wb, 'workout_' + today() + '.xlsx');
+  XLSX.writeFile(wb, 'workout_backup.xlsx');
 }
 
 function importExcel(event) {
