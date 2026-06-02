@@ -250,6 +250,19 @@
       <div class="log-title" style="margin-bottom:0">🕐 기록 로그</div>
       <button class="btn-more" style="padding:0; width:auto;" onclick="toggleShowAll()">더보기</button>
     </div>
+    <div id="log-filter" style="display:none; margin-bottom:10px;">
+      <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+        <button class="range-btn active" id="filter-range" onclick="setLogFilter('range')">날짜 선택</button>
+        <button class="range-btn" id="filter-all" onclick="setLogFilter('all')">전체 보기</button>
+      </div>
+      <div id="log-date-inputs" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <input type="date" id="log-start" onchange="renderLog()"
+          style="flex:1; height:36px; border:1.5px solid #d1d1d6; border-radius:8px; padding:0 8px; font-size:14px; color:#1c1c1e; background:#f9f9f9; outline:none;">
+        <span style="color:#8e8e93; font-size:13px;">~</span>
+        <input type="date" id="log-end" onchange="renderLog()"
+          style="flex:1; height:36px; border:1.5px solid #d1d1d6; border-radius:8px; padding:0 8px; font-size:14px; color:#1c1c1e; background:#f9f9f9; outline:none;">
+      </div>
+    </div>
     <div id="log-list" style="display:none"></div>
   </div>
 </div>
@@ -268,6 +281,7 @@ const EX_COLORS = { pushup: '#007aff', situp: '#34c759', squat: '#ff9500' };
 
 let showAll = false;
 let currentRange = 'thismonth';
+let logFilter = 'range'; // 'range' or 'all'
 
 function today() {
   const d = new Date();
@@ -317,6 +331,18 @@ function deleteLog(index) {
   renderStats(); renderLog(); renderChart();
 }
 
+function deleteLogByDate(date, index) {
+  const all = loadAll();
+  if (!all[date]) return;
+  const entry = all[date][index];
+  if (!entry) return;
+  if (!confirm(`"${NAMES[entry.exercise]} ${entry.count}개" 기록을 삭제할까요?`)) return;
+  all[date].splice(index, 1);
+  if (all[date].length === 0) delete all[date];
+  saveAll(all);
+  renderStats(); renderLog(); renderChart();
+}
+
 function flashCard(ex) {
   const card = document.getElementById('card-' + ex);
   card.style.transition = 'background 0.1s';
@@ -348,25 +374,86 @@ function renderStats() {
   });
 }
 
+function setLogFilter(filter) {
+  logFilter = filter;
+  document.getElementById('filter-range').classList.toggle('active', filter === 'range');
+  document.getElementById('filter-all').classList.toggle('active', filter === 'all');
+  document.getElementById('log-date-inputs').style.display = filter === 'range' ? 'flex' : 'none';
+  renderLog();
+}
+
 function renderLog() {
-  const logs = todayLogs();
   const el = document.getElementById('log-list');
-  if (!showAll) { el.style.display = 'none'; return; }
+  const filterEl = document.getElementById('log-filter');
+  const btn = document.querySelector('.log-section .btn-more');
+
+  if (!showAll) {
+    el.style.display = 'none';
+    filterEl.style.display = 'none';
+    if (btn) btn.textContent = '더보기';
+    return;
+  }
+
+  filterEl.style.display = 'block';
   el.style.display = 'block';
-  if (logs.length === 0) { el.innerHTML = '<div class="no-log">아직 기록이 없어요</div>'; return; }
-  const reversed = [...logs].map((l, i) => ({ ...l, origIndex: i })).reverse();
-  el.innerHTML = reversed.map(l =>
-    `<div class="log-item">
-      <div class="log-left"><span>${NAMES[l.exercise]} ${l.count}개</span><span class="log-time">${l.time}</span></div>
-      <button class="log-delete-btn" onclick="deleteLog(${l.origIndex})">🗑</button>
-    </div>`
-  ).join('');
+  if (btn) btn.textContent = '접기';
+
+  const all = loadAll();
+  let entries = []; // { date, exercise, count, time, origIndex }
+
+  if (logFilter === 'all') {
+    Object.keys(all).sort().reverse().forEach(date => {
+      (all[date] || []).forEach((l, i) => {
+        entries.push({ date, ...l, origIndex: i });
+      });
+    });
+  } else {
+    const start = document.getElementById('log-start').value;
+    const end = document.getElementById('log-end').value;
+    Object.keys(all).sort().reverse().forEach(date => {
+      if (start && date < start) return;
+      if (end && date > end) return;
+      (all[date] || []).forEach((l, i) => {
+        entries.push({ date, ...l, origIndex: i });
+      });
+    });
+  }
+
+  if (entries.length === 0) {
+    el.innerHTML = '<div class="no-log">해당 기간에 기록이 없어요</div>';
+    return;
+  }
+
+  // 날짜별 그룹핑
+  const grouped = {};
+  entries.forEach(l => {
+    if (!grouped[l.date]) grouped[l.date] = [];
+    grouped[l.date].push(l);
+  });
+
+  el.innerHTML = Object.keys(grouped).sort().reverse().map(date => {
+    const dayLogs = grouped[date].reverse();
+    const itemsHTML = dayLogs.map(l =>
+      `<div class="log-item">
+        <div class="log-left"><span>${NAMES[l.exercise]} ${l.count}개</span><span class="log-time">${l.time}</span></div>
+        <button class="log-delete-btn" onclick="deleteLogByDate('${l.date}', ${l.origIndex})">🗑</button>
+      </div>`
+    ).join('');
+    return `<div style="margin-bottom:10px;">
+      <div style="font-size:12px; font-weight:600; color:#8e8e93; margin-bottom:4px;">${date}</div>
+      ${itemsHTML}
+    </div>`;
+  }).join('');
 }
 
 function toggleShowAll() {
   showAll = !showAll;
-  const btn = document.querySelector('.log-section .btn-more');
-  if (btn) btn.textContent = showAll ? '접기' : '더보기';
+  if (showAll) {
+    // 기본 날짜: 오늘
+    const t = today();
+    document.getElementById('log-start').value = t;
+    document.getElementById('log-end').value = t;
+  }
   renderLog();
 }
 
