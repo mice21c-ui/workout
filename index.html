@@ -18,10 +18,7 @@
     padding-top: max(env(safe-area-inset-top, 20px), 20px);
   }
 
-  .header {
-    text-align: center;
-    padding: 16px 0 12px;
-  }
+  .header { text-align: center; padding: 16px 0 12px; }
   .header h1 { font-size: 26px; font-weight: 700; color: #1c1c1e; }
   .header .date { font-size: 14px; color: #8e8e93; margin-top: 4px; }
 
@@ -33,21 +30,12 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
 
-  .exercise-title {
-    font-size: 17px;
-    font-weight: 600;
-    color: #1c1c1e;
-    margin-bottom: 12px;
-  }
+  .exercise-title { font-size: 17px; font-weight: 600; color: #1c1c1e; margin-bottom: 12px; }
 
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .controls { display: flex; align-items: center; gap: 8px; }
 
   .count-input {
-    width: 70px;
+    width: 66px;
     height: 44px;
     border: 1.5px solid #d1d1d6;
     border-radius: 10px;
@@ -58,6 +46,7 @@
     background: #f9f9f9;
     -webkit-appearance: none;
     outline: none;
+    flex-shrink: 0;
   }
   .count-input:focus { border-color: #007aff; background: white; }
 
@@ -67,25 +56,42 @@
     border: none;
     border-radius: 10px;
     height: 44px;
-    padding: 0 18px;
-    font-size: 16px;
+    padding: 0 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.15s;
     white-space: nowrap;
+    flex-shrink: 0;
   }
   .done-btn:active { opacity: 0.75; transform: scale(0.97); }
+
+  .undo-btn {
+    background: none;
+    border: 1.5px solid #d1d1d6;
+    border-radius: 10px;
+    height: 44px;
+    width: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8e8e93;
+    flex-shrink: 0;
+  }
+  .undo-btn:active { opacity: 0.5; }
 
   .stats {
     flex: 1;
     background: #f2f2f7;
     border-radius: 10px;
-    padding: 6px 10px;
+    padding: 6px 8px;
     text-align: center;
+    min-width: 0;
   }
-  .stats-label { font-size: 11px; color: #8e8e93; }
-  .stats-value { font-size: 18px; font-weight: 700; color: #1c1c1e; }
-  .stats-sub { font-size: 11px; color: #8e8e93; margin-top: 1px; }
+  .stats-label { font-size: 10px; color: #8e8e93; }
+  .stats-value { font-size: 17px; font-weight: 700; color: #1c1c1e; }
+  .stats-sub { font-size: 10px; color: #8e8e93; margin-top: 1px; }
 
   .summary-card {
     background: white;
@@ -100,6 +106,33 @@
   .summary-item .num { font-size: 22px; font-weight: 700; color: #007aff; }
   .summary-item .lbl { font-size: 11px; color: #8e8e93; margin-top: 2px; }
 
+  .log-title { font-size: 15px; font-weight: 600; color: #8e8e93; margin-bottom: 8px; }
+  .log-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #3a3a3c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .log-time { color: #8e8e93; font-size: 12px; }
+  .no-log { font-size: 13px; color: #c7c7cc; text-align: center; padding: 10px; }
+
+  .show-more-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #007aff;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 0 2px;
+    cursor: pointer;
+    text-align: center;
+  }
+
   .btn-report {
     background: #007aff;
     color: white;
@@ -111,7 +144,6 @@
     font-weight: 600;
     cursor: pointer;
     margin-bottom: 10px;
-    transition: opacity 0.15s;
   }
   .btn-report:active { opacity: 0.8; }
 
@@ -125,47 +157,9 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.15s;
+    margin-bottom: 20px;
   }
   .btn-reset:active { opacity: 0.8; }
-
-  .undo-btn {
-    background: none;
-    border: 1.5px solid #d1d1d6;
-    border-radius: 10px;
-    height: 44px;
-    width: 44px;
-    font-size: 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #8e8e93;
-    transition: opacity 0.15s;
-    flex-shrink: 0;
-  }
-  .undo-btn:active { opacity: 0.5; }
-
-  .log-section { margin-top: 6px; }
-  .log-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #8e8e93;
-    margin-bottom: 8px;
-  }
-  .log-item {
-    background: #f9f9f9;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 6px;
-    font-size: 13px;
-    color: #3a3a3c;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .log-item .log-time { color: #8e8e93; font-size: 12px; }
-  .no-log { font-size: 13px; color: #c7c7cc; text-align: center; padding: 10px; }
 </style>
 </head>
 <body>
@@ -180,10 +174,10 @@
   <div class="controls">
     <input class="count-input" type="number" id="val-pushup" value="30" min="1" max="999" inputmode="numeric">
     <button class="done-btn" onclick="record('pushup')">완료 ✓</button>
-    <button class="undo-btn" onclick="undo('pushup')" title="실행취소">↩</button>
+    <button class="undo-btn" onclick="undo('pushup')">↩</button>
     <div class="stats">
-      <div class="stats-label">완료 횟수</div>
-      <div class="stats-value" id="sets-pushup">0</div>
+      <div class="stats-label">완료 / 총개수</div>
+      <div class="stats-value" id="sets-pushup">0회</div>
       <div class="stats-sub" id="total-pushup">총 0개</div>
     </div>
   </div>
@@ -194,10 +188,10 @@
   <div class="controls">
     <input class="count-input" type="number" id="val-crunch" value="30" min="1" max="999" inputmode="numeric">
     <button class="done-btn" onclick="record('crunch')">완료 ✓</button>
-    <button class="undo-btn" onclick="undo('crunch')" title="실행취소">↩</button>
+    <button class="undo-btn" onclick="undo('crunch')">↩</button>
     <div class="stats">
-      <div class="stats-label">완료 횟수</div>
-      <div class="stats-value" id="sets-crunch">0</div>
+      <div class="stats-label">완료 / 총개수</div>
+      <div class="stats-value" id="sets-crunch">0회</div>
       <div class="stats-sub" id="total-crunch">총 0개</div>
     </div>
   </div>
@@ -208,10 +202,10 @@
   <div class="controls">
     <input class="count-input" type="number" id="val-squat" value="30" min="1" max="999" inputmode="numeric">
     <button class="done-btn" onclick="record('squat')">완료 ✓</button>
-    <button class="undo-btn" onclick="undo('squat')" title="실행취소">↩</button>
+    <button class="undo-btn" onclick="undo('squat')">↩</button>
     <div class="stats">
-      <div class="stats-label">완료 횟수</div>
-      <div class="stats-value" id="sets-squat">0</div>
+      <div class="stats-label">완료 / 총개수</div>
+      <div class="stats-value" id="sets-squat">0회</div>
       <div class="stats-sub" id="total-squat">총 0개</div>
     </div>
   </div>
@@ -236,10 +230,9 @@
 </div>
 
 <div class="card">
-  <div class="log-section">
-    <div class="log-title">🕐 기록 로그</div>
-    <div id="log-list"><div class="no-log">아직 기록이 없어요</div></div>
-  </div>
+  <div class="log-title">🕐 기록 로그</div>
+  <div id="log-list"><div class="no-log">아직 기록이 없어요</div></div>
+  <button class="show-more-btn" id="show-more-btn" style="display:none" onclick="toggleLog()">더보기 ▼</button>
 </div>
 
 <button class="btn-report" onclick="exportExcel()">📥 엑셀 리포트 다운로드</button>
@@ -249,10 +242,11 @@
 <script>
 const NAMES = { pushup: 'Push-ups', crunch: 'Crunch', squat: 'Squat' };
 const STORAGE_KEY = 'workout_log_v2';
+const LOG_PREVIEW = 5;
+let logExpanded = false;
 
 function today() {
-  const d = new Date();
-  return d.toISOString().split('T')[0];
+  return new Date().toISOString().split('T')[0];
 }
 
 function fmt(d) {
@@ -272,17 +266,15 @@ function saveAll(data) {
 }
 
 function todayLogs() {
-  const all = loadAll();
-  return all[today()] || [];
+  return loadAll()[today()] || [];
 }
 
 function record(ex) {
   const val = parseInt(document.getElementById('val-' + ex).value, 10);
   if (!val || val < 1) { alert('횟수를 1 이상으로 입력해 주세요.'); return; }
-  const entry = { exercise: ex, count: val, time: timeStr(), ts: Date.now() };
   const all = loadAll();
   if (!all[today()]) all[today()] = [];
-  all[today()].push(entry);
+  all[today()].push({ exercise: ex, count: val, time: timeStr(), ts: Date.now() });
   saveAll(all);
   renderStats();
   renderLog();
@@ -312,7 +304,7 @@ function flashCard(ex) {
 
 function renderStats() {
   const logs = todayLogs();
-  ['pushup','crunch','squat'].forEach(ex => {
+  ['pushup', 'crunch', 'squat'].forEach(ex => {
     const mine = logs.filter(l => l.exercise === ex);
     const total = mine.reduce((s, l) => s + l.count, 0);
     document.getElementById('sets-' + ex).textContent = mine.length + '회';
@@ -322,18 +314,35 @@ function renderStats() {
 }
 
 function renderLog() {
-  const logs = todayLogs();
+  const logs = [...todayLogs()].reverse();
   const el = document.getElementById('log-list');
+  const btn = document.getElementById('show-more-btn');
+
   if (logs.length === 0) {
     el.innerHTML = '<div class="no-log">아직 기록이 없어요</div>';
+    btn.style.display = 'none';
     return;
   }
-  el.innerHTML = [...logs].reverse().map(l =>
+
+  const visible = logExpanded ? logs : logs.slice(0, LOG_PREVIEW);
+  el.innerHTML = visible.map(l =>
     `<div class="log-item">
       <span>${NAMES[l.exercise]} ${l.count}개</span>
       <span class="log-time">${l.time}</span>
     </div>`
   ).join('');
+
+  if (logs.length > LOG_PREVIEW) {
+    btn.style.display = 'block';
+    btn.textContent = logExpanded ? '접기 ▲' : `더보기 (${logs.length - LOG_PREVIEW}개) ▼`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function toggleLog() {
+  logExpanded = !logExpanded;
+  renderLog();
 }
 
 function resetToday() {
@@ -341,6 +350,7 @@ function resetToday() {
   const all = loadAll();
   delete all[today()];
   saveAll(all);
+  logExpanded = false;
   renderStats();
   renderLog();
 }
@@ -358,7 +368,7 @@ function exportExcel() {
   const detailRows = [['날짜', '운동', '횟수', '시간']];
   Object.keys(all).sort().forEach(date => {
     (all[date] || []).forEach(l => {
-      detailRows.push([date, NAMES[l.exercise], l.count, l.time]);
+      detailRows.push([date, NAMES[l.exercise] || l.exercise, l.count, l.time]);
     });
   });
   const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
@@ -366,28 +376,28 @@ function exportExcel() {
   XLSX.utils.book_append_sheet(wb, wsDetail, '상세 기록');
 
   // Sheet 2: 일별 요약
-  const summaryRows = [['날짜', 'Push-ups', 'Sit-ups', 'Squat', '총합']];
+  const summaryRows = [['날짜', 'Push-ups', 'Crunch', 'Squat', '총합']];
   Object.keys(all).sort().forEach(date => {
     const logs = all[date] || [];
-    const pu = logs.filter(l=>l.exercise==='pushup').reduce((s,l)=>s+l.count,0);
-    const su = logs.filter(l=>l.exercise==='crunch').reduce((s,l)=>s+l.count,0);
-    const sq = logs.filter(l=>l.exercise==='squat').reduce((s,l)=>s+l.count,0);
-    summaryRows.push([date, pu, su, sq, pu+su+sq]);
+    const pu = logs.filter(l => l.exercise === 'pushup').reduce((s, l) => s + l.count, 0);
+    const cr = logs.filter(l => l.exercise === 'crunch').reduce((s, l) => s + l.count, 0);
+    const sq = logs.filter(l => l.exercise === 'squat').reduce((s, l) => s + l.count, 0);
+    summaryRows.push([date, pu, cr, sq, pu + cr + sq]);
   });
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
   wsSummary['!cols'] = [{wch:12},{wch:12},{wch:12},{wch:12},{wch:10}];
   XLSX.utils.book_append_sheet(wb, wsSummary, '일별 요약');
 
-  const filename = 'workout_' + today() + '.xlsx';
-  XLSX.writeFile(wb, filename);
+  XLSX.writeFile(wb, 'Workout_Backup.xlsx');
 }
 
 
+// 기존 situp 데이터를 crunch로 한 번만 변환
 function migrateData() {
   if (localStorage.getItem('migrated_situp_to_crunch')) return;
   const all = loadAll();
   Object.keys(all).forEach(date => {
-    all[date].forEach(entry => {
+    (all[date] || []).forEach(entry => {
       if (entry.exercise === 'situp') entry.exercise = 'crunch';
     });
   });
@@ -395,10 +405,8 @@ function migrateData() {
   localStorage.setItem('migrated_situp_to_crunch', 'true');
 }
 
-// 날짜 표시
+// 초기화
 document.getElementById('today-date').textContent = fmt(new Date());
-
-// 초기 렌더
 migrateData();
 renderStats();
 renderLog();
