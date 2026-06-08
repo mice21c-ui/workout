@@ -189,16 +189,16 @@
   </div>
 </div>
 
-<div class="card" id="card-situp">
+<div class="card" id="card-crunch">
   <div class="exercise-title">🧘 Crunch</div>
   <div class="controls">
-    <input class="count-input" type="number" id="val-situp" value="30" min="1" max="999" inputmode="numeric">
-    <button class="done-btn" onclick="record('situp')">완료 ✓</button>
-    <button class="undo-btn" onclick="undo('situp')" title="실행취소">↩</button>
+    <input class="count-input" type="number" id="val-crunch" value="30" min="1" max="999" inputmode="numeric">
+    <button class="done-btn" onclick="record('crunch')">완료 ✓</button>
+    <button class="undo-btn" onclick="undo('crunch')" title="실행취소">↩</button>
     <div class="stats">
       <div class="stats-label">완료 횟수</div>
-      <div class="stats-value" id="sets-situp">0</div>
-      <div class="stats-sub" id="total-situp">총 0개</div>
+      <div class="stats-value" id="sets-crunch">0</div>
+      <div class="stats-sub" id="total-crunch">총 0개</div>
     </div>
   </div>
 </div>
@@ -225,7 +225,7 @@
       <div class="lbl">Push-ups</div>
     </div>
     <div class="summary-item">
-      <div class="num" id="sum-situp">0</div>
+      <div class="num" id="sum-crunch">0</div>
       <div class="lbl">Crunch</div>
     </div>
     <div class="summary-item">
@@ -247,7 +247,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const NAMES = { pushup: 'Push-ups', situp: 'Crunch', squat: 'Squat' };
+const NAMES = { pushup: 'Push-ups', crunch: 'Crunch', squat: 'Squat' };
 const STORAGE_KEY = 'workout_log_v2';
 
 function today() {
@@ -312,7 +312,7 @@ function flashCard(ex) {
 
 function renderStats() {
   const logs = todayLogs();
-  ['pushup','situp','squat'].forEach(ex => {
+  ['pushup','crunch','squat'].forEach(ex => {
     const mine = logs.filter(l => l.exercise === ex);
     const total = mine.reduce((s, l) => s + l.count, 0);
     document.getElementById('sets-' + ex).textContent = mine.length + '회';
@@ -370,7 +370,7 @@ function exportExcel() {
   Object.keys(all).sort().forEach(date => {
     const logs = all[date] || [];
     const pu = logs.filter(l=>l.exercise==='pushup').reduce((s,l)=>s+l.count,0);
-    const su = logs.filter(l=>l.exercise==='situp').reduce((s,l)=>s+l.count,0);
+    const su = logs.filter(l=>l.exercise==='crunch').reduce((s,l)=>s+l.count,0);
     const sq = logs.filter(l=>l.exercise==='squat').reduce((s,l)=>s+l.count,0);
     summaryRows.push([date, pu, su, sq, pu+su+sq]);
   });
@@ -382,10 +382,24 @@ function exportExcel() {
   XLSX.writeFile(wb, filename);
 }
 
+
+function migrateData() {
+  if (localStorage.getItem('migrated_situp_to_crunch')) return;
+  const all = loadAll();
+  Object.keys(all).forEach(date => {
+    all[date].forEach(entry => {
+      if (entry.exercise === 'situp') entry.exercise = 'crunch';
+    });
+  });
+  saveAll(all);
+  localStorage.setItem('migrated_situp_to_crunch', 'true');
+}
+
 // 날짜 표시
 document.getElementById('today-date').textContent = fmt(new Date());
 
 // 초기 렌더
+migrateData();
 renderStats();
 renderLog();
 </script>
