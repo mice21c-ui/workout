@@ -679,35 +679,6 @@ renderStats();
 renderLog();
 renderChart();
 window.addEventListener('resize', renderChart);
-
-// ===== 마이그레이션 모듈: situp → crunch =====
-function migrateSitupToCrunch() {
-  const all = loadAll();
-  let count = 0;
-  Object.keys(all).forEach(date => {
-    all[date] = all[date].map(entry => {
-      if (entry.exercise === 'situp') {
-        count++;
-        return { ...entry, exercise: 'crunch' };
-      }
-      return entry;
-    });
-  });
-  if (count === 0) {
-    alert('변환할 situp 데이터가 없어요.\n이미 변환됐거나 데이터가 없습니다.');
-    return;
-  }
-  saveAll(all);
-  renderStats(); renderLog(); renderChart();
-  alert(`✅ 마이그레이션 완료!\n${count}개의 situp 기록을 crunch로 변환했습니다.\n\n이제 index.html(정식 버전)으로 교체하세요.`);
-}
 </script>
-
-<div style="position:fixed; bottom:0; left:0; right:0; background:#ff9500; padding:16px; text-align:center; z-index:999;">
-  <div style="font-size:13px; color:white; margin-bottom:8px;">⚠️ 마이그레이션 버전 — 아래 버튼을 한 번만 누르세요</div>
-  <button onclick="migrateSitupToCrunch()" style="background:white; color:#ff9500; border:none; border-radius:10px; padding:10px 24px; font-size:16px; font-weight:700; cursor:pointer;">
-    🔄 situp → crunch 변환 실행
-  </button>
-</div>
 </body>
 </html>
