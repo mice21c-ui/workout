@@ -18,7 +18,10 @@
     padding-top: max(env(safe-area-inset-top, 20px), 20px);
   }
 
-  .header { text-align: center; padding: 16px 0 12px; }
+  .header {
+    text-align: center;
+    padding: 16px 0 12px;
+  }
   .header h1 { font-size: 26px; font-weight: 700; color: #1c1c1e; }
   .header .date { font-size: 14px; color: #8e8e93; margin-top: 4px; }
 
@@ -30,136 +33,139 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
 
-  .exercise-title { font-size: 17px; font-weight: 600; color: #1c1c1e; margin-bottom: 12px; }
+  .exercise-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1c1c1e;
+    margin-bottom: 12px;
+  }
 
-  .controls { display: flex; align-items: center; gap: 10px; }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
   .count-input {
-    width: 70px; height: 44px;
-    border: 1.5px solid #d1d1d6; border-radius: 10px;
-    font-size: 20px; font-weight: 700; text-align: center;
-    color: #1c1c1e; background: #f9f9f9;
-    -webkit-appearance: none; outline: none;
+    width: 70px;
+    height: 44px;
+    border: 1.5px solid #d1d1d6;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    color: #1c1c1e;
+    background: #f9f9f9;
+    -webkit-appearance: none;
+    outline: none;
   }
   .count-input:focus { border-color: #007aff; background: white; }
 
   .done-btn {
-    background: #34c759; color: white; border: none;
-    border-radius: 10px; height: 44px; padding: 0 18px;
-    font-size: 16px; font-weight: 600; cursor: pointer;
-    transition: opacity 0.15s; white-space: nowrap;
+    background: #34c759;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    height: 44px;
+    padding: 0 18px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
   }
   .done-btn:active { opacity: 0.75; transform: scale(0.97); }
 
   .stats {
-    flex: 1; background: #f2f2f7; border-radius: 10px;
-    padding: 6px 10px; text-align: center;
+    flex: 1;
+    background: #f2f2f7;
+    border-radius: 10px;
+    padding: 6px 10px;
+    text-align: center;
   }
   .stats-label { font-size: 11px; color: #8e8e93; }
   .stats-value { font-size: 18px; font-weight: 700; color: #1c1c1e; }
   .stats-sub { font-size: 11px; color: #8e8e93; margin-top: 1px; }
 
   .summary-card {
-    background: white; border-radius: 16px; padding: 16px;
-    margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
   .summary-title { font-size: 15px; font-weight: 600; color: #8e8e93; margin-bottom: 10px; }
   .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .summary-item { text-align: center; background: #ff3b30; border-radius: 10px; padding: 10px 6px; transition: background 0.4s; }
-  .summary-item .num { font-size: 22px; font-weight: 700; color: white; }
-  .summary-item .lbl { font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 2px; }
-
-  /* 그래프 카드 */
-  .chart-card {
-    background: white; border-radius: 16px; padding: 16px;
-    margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  .chart-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
-  }
-  .chart-title { font-size: 15px; font-weight: 600; color: #8e8e93; }
-
-  .range-toggle {
-    display: flex; gap: 6px;
-  }
-  .range-btn {
-    padding: 5px 12px; border-radius: 20px; border: 1.5px solid #d1d1d6;
-    font-size: 13px; font-weight: 500; color: #8e8e93;
-    background: white; cursor: pointer; transition: all 0.15s;
-  }
-  .range-btn.active {
-    background: #007aff; border-color: #007aff; color: white;
-  }
-
-  .chart-checkboxes {
-    display: flex; gap: 14px; margin-bottom: 12px; flex-wrap: wrap;
-  }
-  .chart-checkbox-label {
-    display: flex; align-items: center; gap: 5px;
-    font-size: 13px; font-weight: 500; cursor: pointer; user-select: none;
-  }
-  .chart-checkbox-label input[type=checkbox] {
-    width: 16px; height: 16px; cursor: pointer; accent-color: var(--cb-color);
-  }
-
-  .chart-wrap {
-    position: relative; width: 100%; overflow-x: auto;
-  }
-  canvas#chartCanvas {
-    display: block; width: 100%; max-width: 100%;
-  }
-  .chart-empty {
-    text-align: center; font-size: 13px; color: #c7c7cc; padding: 30px 0;
-  }
-
-  /* 로그 */
-  .log-section { margin-top: 6px; }
-  .log-title { font-size: 15px; font-weight: 600; color: #8e8e93; margin-bottom: 8px; }
-  .log-item {
-    background: #f9f9f9; border-radius: 8px; padding: 8px 12px;
-    margin-bottom: 6px; font-size: 13px; color: #3a3a3c;
-    display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  }
-  .log-item .log-left { display: flex; align-items: center; gap: 8px; flex: 1; }
-  .log-item .log-time { color: #8e8e93; font-size: 12px; }
-  .log-delete-btn {
-    background: none; border: none; cursor: pointer;
-    font-size: 16px; padding: 2px 4px; border-radius: 6px;
-    color: #c7c7cc; transition: color 0.15s, background 0.15s; flex-shrink: 0;
-  }
-  .log-delete-btn:active { color: #ff3b30; background: #fff0f0; }
-  .no-log { font-size: 13px; color: #c7c7cc; text-align: center; padding: 10px; }
-  .btn-more {
-    width: 100%; background: none; border: none; color: #007aff;
-    font-size: 14px; font-weight: 500; padding: 8px 0 2px; cursor: pointer; text-align: center;
-  }
-  .btn-more:active { opacity: 0.6; }
+  .summary-item { text-align: center; background: #f2f2f7; border-radius: 10px; padding: 10px 6px; }
+  .summary-item .num { font-size: 22px; font-weight: 700; color: #007aff; }
+  .summary-item .lbl { font-size: 11px; color: #8e8e93; margin-top: 2px; }
 
   .btn-report {
-    background: #007aff; color: white; border: none;
-    border-radius: 14px; width: 100%; height: 52px;
-    font-size: 17px; font-weight: 600; cursor: pointer;
-    margin-bottom: 10px; transition: opacity 0.15s;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    width: 100%;
+    height: 52px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: opacity 0.15s;
   }
   .btn-report:active { opacity: 0.8; }
 
-  .btn-import {
-    background: #5856d6; color: white; border: none;
-    border-radius: 14px; width: 100%; height: 52px;
-    font-size: 17px; font-weight: 600; cursor: pointer;
-    margin-bottom: 10px; transition: opacity 0.15s;
-  }
-  .btn-import:active { opacity: 0.8; }
-
   .btn-reset {
-    background: #ff3b30; color: white; border: none;
-    border-radius: 14px; width: 100%; height: 44px;
-    font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+    background: #ff3b30;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    width: 100%;
+    height: 44px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
   }
   .btn-reset:active { opacity: 0.8; }
 
-  #file-input { display: none; }
+  .undo-btn {
+    background: none;
+    border: 1.5px solid #d1d1d6;
+    border-radius: 10px;
+    height: 44px;
+    width: 44px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8e8e93;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+  }
+  .undo-btn:active { opacity: 0.5; }
+
+  .log-section { margin-top: 6px; }
+  .log-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #8e8e93;
+    margin-bottom: 8px;
+  }
+  .log-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #3a3a3c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .log-item .log-time { color: #8e8e93; font-size: 12px; }
+  .no-log { font-size: 13px; color: #c7c7cc; text-align: center; padding: 10px; }
 </style>
 </head>
 <body>
@@ -174,6 +180,7 @@
   <div class="controls">
     <input class="count-input" type="number" id="val-pushup" value="30" min="1" max="999" inputmode="numeric">
     <button class="done-btn" onclick="record('pushup')">완료 ✓</button>
+    <button class="undo-btn" onclick="undo('pushup')" title="실행취소">↩</button>
     <div class="stats">
       <div class="stats-label">완료 횟수</div>
       <div class="stats-value" id="sets-pushup">0</div>
@@ -183,10 +190,11 @@
 </div>
 
 <div class="card" id="card-situp">
-  <div class="exercise-title">🧘 Sit-ups</div>
+  <div class="exercise-title">🧘 Crunch</div>
   <div class="controls">
     <input class="count-input" type="number" id="val-situp" value="30" min="1" max="999" inputmode="numeric">
     <button class="done-btn" onclick="record('situp')">완료 ✓</button>
+    <button class="undo-btn" onclick="undo('situp')" title="실행취소">↩</button>
     <div class="stats">
       <div class="stats-label">완료 횟수</div>
       <div class="stats-value" id="sets-situp">0</div>
@@ -200,6 +208,7 @@
   <div class="controls">
     <input class="count-input" type="number" id="val-squat" value="30" min="1" max="999" inputmode="numeric">
     <button class="done-btn" onclick="record('squat')">완료 ✓</button>
+    <button class="undo-btn" onclick="undo('squat')" title="실행취소">↩</button>
     <div class="stats">
       <div class="stats-label">완료 횟수</div>
       <div class="stats-value" id="sets-squat">0</div>
@@ -211,136 +220,87 @@
 <div class="summary-card">
   <div class="summary-title">📊 오늘 총계</div>
   <div class="summary-grid">
-    <div class="summary-item"><div class="num" id="sum-pushup">0</div><div class="lbl">Push-ups</div></div>
-    <div class="summary-item"><div class="num" id="sum-situp">0</div><div class="lbl">Sit-ups</div></div>
-    <div class="summary-item"><div class="num" id="sum-squat">0</div><div class="lbl">Squat</div></div>
-  </div>
-</div>
-
-<!-- 그래프 카드 -->
-<div class="chart-card">
-  <div class="chart-header">
-    <span class="chart-title">📈 운동 추이</span>
-    <div class="range-toggle">
-      <button class="range-btn active" id="btn-thismonth" onclick="setRange('thismonth')">이번 달</button>
-      <button class="range-btn" id="btn-30days" onclick="setRange('30days')">최근 30일</button>
+    <div class="summary-item">
+      <div class="num" id="sum-pushup">0</div>
+      <div class="lbl">Push-ups</div>
+    </div>
+    <div class="summary-item">
+      <div class="num" id="sum-situp">0</div>
+      <div class="lbl">Crunch</div>
+    </div>
+    <div class="summary-item">
+      <div class="num" id="sum-squat">0</div>
+      <div class="lbl">Squat</div>
     </div>
   </div>
-  <div class="chart-checkboxes">
-    <label class="chart-checkbox-label" style="--cb-color:#007aff">
-      <input type="checkbox" id="cb-pushup" checked onchange="renderChart()"> Push-ups
-    </label>
-    <label class="chart-checkbox-label" style="--cb-color:#34c759">
-      <input type="checkbox" id="cb-situp" checked onchange="renderChart()"> Sit-ups
-    </label>
-    <label class="chart-checkbox-label" style="--cb-color:#ff9500">
-      <input type="checkbox" id="cb-squat" checked onchange="renderChart()"> Squat
-    </label>
-  </div>
-  <div class="chart-wrap">
-    <canvas id="chartCanvas"></canvas>
-    <div class="chart-empty" id="chart-empty" style="display:none">기록이 없어요</div>
-  </div>
 </div>
-
 
 <div class="card">
   <div class="log-section">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-      <div class="log-title" style="margin-bottom:0">🕐 기록 로그</div>
-      <button class="btn-more" style="padding:0; width:auto;" onclick="toggleShowAll()">더보기</button>
-    </div>
-    <div id="log-filter" style="display:none; margin-bottom:10px;">
-      <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
-        <button class="range-btn active" id="filter-range" onclick="setLogFilter('range')">날짜 선택</button>
-        <button class="range-btn" id="filter-all" onclick="setLogFilter('all')">전체 보기</button>
-      </div>
-      <div id="log-date-inputs" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <input type="date" id="log-start" onchange="renderLog()"
-          style="flex:1; height:36px; border:1.5px solid #d1d1d6; border-radius:8px; padding:0 8px; font-size:14px; color:#1c1c1e; background:#f9f9f9; outline:none;">
-        <span style="color:#8e8e93; font-size:13px;">~</span>
-        <input type="date" id="log-end" onchange="renderLog()"
-          style="flex:1; height:36px; border:1.5px solid #d1d1d6; border-radius:8px; padding:0 8px; font-size:14px; color:#1c1c1e; background:#f9f9f9; outline:none;">
-      </div>
-    </div>
-    <div id="log-list" style="display:none"></div>
+    <div class="log-title">🕐 기록 로그</div>
+    <div id="log-list"><div class="no-log">아직 기록이 없어요</div></div>
   </div>
 </div>
 
-<button class="btn-report" onclick="exportExcel()">📥 엑셀 백업 다운로드</button>
-<button class="btn-import" onclick="document.getElementById('file-input').click()">📤 엑셀 백업 가져오기</button>
-<input type="file" id="file-input" accept=".xlsx" onchange="importExcel(event)">
+<button class="btn-report" onclick="exportExcel()">📥 엑셀 리포트 다운로드</button>
+<button class="btn-reset" onclick="resetToday()">🗑 오늘 기록 초기화</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const NAMES = { pushup: 'Push-ups', situp: 'Sit-ups', squat: 'Squat' };
-const NAMES_REVERSE = { 'Push-ups': 'pushup', 'Sit-ups': 'situp', 'Squat': 'squat' };
+const NAMES = { pushup: 'Push-ups', situp: 'Crunch', squat: 'Squat' };
 const STORAGE_KEY = 'workout_log_v2';
-const PREVIEW_COUNT = 3;
-const EX_COLORS = { pushup: '#007aff', situp: '#34c759', squat: '#ff9500' };
-
-let showAll = false;
-let currentRange = 'thismonth';
-let logFilter = 'range'; // 'range' or 'all'
 
 function today() {
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return d.toISOString().split('T')[0];
 }
+
 function fmt(d) {
-  const parts = new Intl.DateTimeFormat('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' }).formatToParts(d);
-  const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
-  return `${map.year}년 ${map.month} ${map.day} ${map.weekday}요일`;
+  return new Intl.DateTimeFormat('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' }).format(d);
 }
+
 function timeStr() {
   return new Date().toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 }
+
 function loadAll() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
 }
+
 function saveAll(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
+
 function todayLogs() {
-  return (loadAll()[today()] || []);
+  const all = loadAll();
+  return all[today()] || [];
 }
 
 function record(ex) {
   const val = parseInt(document.getElementById('val-' + ex).value, 10);
   if (!val || val < 1) { alert('횟수를 1 이상으로 입력해 주세요.'); return; }
+  const entry = { exercise: ex, count: val, time: timeStr(), ts: Date.now() };
   const all = loadAll();
   if (!all[today()]) all[today()] = [];
-  all[today()].push({ exercise: ex, count: val, time: timeStr(), ts: Date.now() });
+  all[today()].push(entry);
   saveAll(all);
-  showAll = false;
-  renderStats(); renderLog(); renderChart(); flashCard(ex);
+  renderStats();
+  renderLog();
+  flashCard(ex);
 }
 
-function deleteLog(index) {
-  const all = loadAll(); const key = today();
-  if (!all[key]) return;
-  const entry = all[key][index];
-  if (!entry) return;
-  if (!confirm(`"${NAMES[entry.exercise]} ${entry.count}개" 기록을 삭제할까요?`)) return;
-  all[key].splice(index, 1);
-  if (all[key].length === 0) delete all[key];
-  saveAll(all);
-  renderStats(); renderLog(); renderChart();
-}
-
-function deleteLogByDate(date, index) {
+function undo(ex) {
   const all = loadAll();
-  if (!all[date]) return;
-  const entry = all[date][index];
-  if (!entry) return;
-  if (!confirm(`"${NAMES[entry.exercise]} ${entry.count}개" 기록을 삭제할까요?`)) return;
-  all[date].splice(index, 1);
-  if (all[date].length === 0) delete all[date];
+  const logs = all[today()] || [];
+  let found = false;
+  for (let i = logs.length - 1; i >= 0; i--) {
+    if (logs[i].exercise === ex) { logs.splice(i, 1); found = true; break; }
+  }
+  if (!found) { alert('취소할 기록이 없어요.'); return; }
+  all[today()] = logs;
   saveAll(all);
-  renderStats(); renderLog(); renderChart();
+  renderStats();
+  renderLog();
 }
 
 function flashCard(ex) {
@@ -350,17 +310,6 @@ function flashCard(ex) {
   setTimeout(() => { card.style.background = 'white'; }, 600);
 }
 
-function getScaleColor(total) {
-  // 0~300개, 30개마다 1단계 (0~10단계)
-  const step = Math.min(Math.floor(total / 30), 10);
-  const ratio = step / 10; // 0.0 ~ 1.0
-  // 빨간(255,59,48) → 주황 → 그린(52,199,89)
-  const r = Math.round(255 + (52  - 255) * ratio);
-  const g = Math.round(59  + (199 - 59)  * ratio);
-  const b = Math.round(48  + (89  - 48)  * ratio);
-  return `rgb(${r},${g},${b})`;
-}
-
 function renderStats() {
   const logs = todayLogs();
   ['pushup','situp','squat'].forEach(ex => {
@@ -368,267 +317,55 @@ function renderStats() {
     const total = mine.reduce((s, l) => s + l.count, 0);
     document.getElementById('sets-' + ex).textContent = mine.length + '회';
     document.getElementById('total-' + ex).textContent = '총 ' + total + '개';
-    const numEl = document.getElementById('sum-' + ex);
-    numEl.textContent = total;
-    numEl.closest('.summary-item').style.background = getScaleColor(total);
+    document.getElementById('sum-' + ex).textContent = total;
   });
-}
-
-function setLogFilter(filter) {
-  logFilter = filter;
-  document.getElementById('filter-range').classList.toggle('active', filter === 'range');
-  document.getElementById('filter-all').classList.toggle('active', filter === 'all');
-  document.getElementById('log-date-inputs').style.display = filter === 'range' ? 'flex' : 'none';
-  renderLog();
 }
 
 function renderLog() {
+  const logs = todayLogs();
   const el = document.getElementById('log-list');
-  const filterEl = document.getElementById('log-filter');
-  const btn = document.querySelector('.log-section .btn-more');
-
-  if (!showAll) {
-    el.style.display = 'none';
-    filterEl.style.display = 'none';
-    if (btn) btn.textContent = '더보기';
+  if (logs.length === 0) {
+    el.innerHTML = '<div class="no-log">아직 기록이 없어요</div>';
     return;
   }
-
-  filterEl.style.display = 'block';
-  el.style.display = 'block';
-  if (btn) btn.textContent = '접기';
-
-  const all = loadAll();
-  let entries = []; // { date, exercise, count, time, origIndex }
-
-  if (logFilter === 'all') {
-    Object.keys(all).sort().reverse().forEach(date => {
-      (all[date] || []).forEach((l, i) => {
-        entries.push({ date, ...l, origIndex: i });
-      });
-    });
-  } else {
-    const start = document.getElementById('log-start').value;
-    const end = document.getElementById('log-end').value;
-    Object.keys(all).sort().reverse().forEach(date => {
-      if (start && date < start) return;
-      if (end && date > end) return;
-      (all[date] || []).forEach((l, i) => {
-        entries.push({ date, ...l, origIndex: i });
-      });
-    });
-  }
-
-  if (entries.length === 0) {
-    el.innerHTML = '<div class="no-log">해당 기간에 기록이 없어요</div>';
-    return;
-  }
-
-  // 날짜별 그룹핑
-  const grouped = {};
-  entries.forEach(l => {
-    if (!grouped[l.date]) grouped[l.date] = [];
-    grouped[l.date].push(l);
-  });
-
-  el.innerHTML = Object.keys(grouped).sort().reverse().map(date => {
-    const dayLogs = grouped[date].reverse();
-    const itemsHTML = dayLogs.map(l =>
-      `<div class="log-item">
-        <div class="log-left"><span>${NAMES[l.exercise]} ${l.count}개</span><span class="log-time">${l.time}</span></div>
-        <button class="log-delete-btn" onclick="deleteLogByDate('${l.date}', ${l.origIndex})">🗑</button>
-      </div>`
-    ).join('');
-    return `<div style="margin-bottom:10px;">
-      <div style="font-size:12px; font-weight:600; color:#8e8e93; margin-bottom:4px;">${date}</div>
-      ${itemsHTML}
-    </div>`;
-  }).join('');
-}
-
-function toggleShowAll() {
-  showAll = !showAll;
-  if (showAll) {
-    // 기본 날짜: 오늘
-    const t = today();
-    document.getElementById('log-start').value = t;
-    document.getElementById('log-end').value = t;
-  }
-  renderLog();
-}
-
-function setRange(range) {
-  currentRange = range;
-  document.getElementById('btn-thismonth').classList.toggle('active', range === 'thismonth');
-  document.getElementById('btn-30days').classList.toggle('active', range === '30days');
-  renderChart();
-}
-
-// 날짜 범위 생성
-function getDateRange() {
-  const now = new Date();
-  const dates = [];
-  if (currentRange === 'thismonth') {
-    const year = now.getFullYear(), month = now.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dd = String(d).padStart(2, '0');
-      const mm = String(month + 1).padStart(2, '0');
-      dates.push(`${year}-${mm}-${dd}`);
-    }
-  } else {
-    // 최근 30일
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      dates.push(`${y}-${m}-${day}`);
-    }
-  }
-  return dates;
-}
-
-function renderChart() {
-  const canvas = document.getElementById('chartCanvas');
-  const emptyEl = document.getElementById('chart-empty');
-  const all = loadAll();
-  const dates = getDateRange();
-
-  const checked = {
-    pushup: document.getElementById('cb-pushup').checked,
-    situp:  document.getElementById('cb-situp').checked,
-    squat:  document.getElementById('cb-squat').checked,
-  };
-
-  // 날짜별 데이터 집계
-  const series = { pushup: [], situp: [], squat: [] };
-  dates.forEach(date => {
-    const logs = all[date] || [];
-    ['pushup','situp','squat'].forEach(ex => {
-      series[ex].push(logs.filter(l => l.exercise === ex).reduce((s, l) => s + l.count, 0));
-    });
-  });
-
-  // 선택된 운동 중 데이터가 하나라도 있는지 확인
-  const hasData = Object.keys(checked).some(ex =>
-    checked[ex] && series[ex].some(v => v > 0)
-  );
-
-  if (!hasData) {
-    canvas.style.display = 'none';
-    emptyEl.style.display = 'block';
-    return;
-  }
-  canvas.style.display = 'block';
-  emptyEl.style.display = 'none';
-
-  // 캔버스 크기
-  const dpr = window.devicePixelRatio || 1;
-  const W = canvas.parentElement.clientWidth || 320;
-  const H = 200;
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, W, H);
-
-  const PAD_LEFT = 36, PAD_RIGHT = 12, PAD_TOP = 16, PAD_BOTTOM = 28;
-  const chartW = W - PAD_LEFT - PAD_RIGHT;
-  const chartH = H - PAD_TOP - PAD_BOTTOM;
-
-  // Y 최대값
-  const allVals = Object.keys(checked).filter(ex => checked[ex]).flatMap(ex => series[ex]);
-  const maxVal = Math.max(...allVals, 1);
-  const yMax = Math.ceil(maxVal / 10) * 10 || 10;
-
-  // 그리드 & Y축
-  ctx.strokeStyle = '#e5e5ea';
-  ctx.lineWidth = 1;
-  ctx.fillStyle = '#8e8e93';
-  ctx.font = `${10 * 1}px -apple-system, sans-serif`;
-  ctx.textAlign = 'right';
-  const yTicks = 4;
-  for (let i = 0; i <= yTicks; i++) {
-    const val = Math.round(yMax * i / yTicks);
-    const y = PAD_TOP + chartH - (chartH * i / yTicks);
-    ctx.beginPath(); ctx.moveTo(PAD_LEFT, y); ctx.lineTo(PAD_LEFT + chartW, y); ctx.stroke();
-    ctx.fillText(val, PAD_LEFT - 4, y + 3.5);
-  }
-
-  // X축 레이블 (날짜 수에 따라 간격 조절)
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#8e8e93';
-  const n = dates.length;
-  // 레이블 최대 표시 개수
-  const maxLabels = Math.floor(chartW / 22);
-  const step = Math.ceil(n / maxLabels);
-  dates.forEach((date, i) => {
-    if (i % step !== 0 && i !== n - 1) return;
-    const x = PAD_LEFT + (i / (n - 1)) * chartW;
-    const day = parseInt(date.split('-')[2], 10);
-    ctx.fillText(day, x, H - PAD_BOTTOM + 14);
-  });
-
-  // X축 선
-  ctx.strokeStyle = '#d1d1d6'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(PAD_LEFT, PAD_TOP + chartH); ctx.lineTo(PAD_LEFT + chartW, PAD_TOP + chartH); ctx.stroke();
-
-  // 선 그래프
-  ['pushup','situp','squat'].forEach(ex => {
-    if (!checked[ex]) return;
-    const data = series[ex];
-    const color = EX_COLORS[ex];
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2.5;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-
-    ctx.beginPath();
-    let started = false;
-    data.forEach((val, i) => {
-      const x = PAD_LEFT + (n === 1 ? chartW / 2 : (i / (n - 1)) * chartW);
-      const y = PAD_TOP + chartH - (val / yMax) * chartH;
-      if (!started) { ctx.moveTo(x, y); started = true; }
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // 데이터 포인트 (값이 0 초과인 날만)
-    data.forEach((val, i) => {
-      if (val === 0) return;
-      const x = PAD_LEFT + (n === 1 ? chartW / 2 : (i / (n - 1)) * chartW);
-      const y = PAD_TOP + chartH - (val / yMax) * chartH;
-      ctx.beginPath();
-      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
-    });
-  });
+  el.innerHTML = [...logs].reverse().map(l =>
+    `<div class="log-item">
+      <span>${NAMES[l.exercise]} ${l.count}개</span>
+      <span class="log-time">${l.time}</span>
+    </div>`
+  ).join('');
 }
 
 function resetToday() {
   if (!confirm('오늘 기록을 초기화할까요?')) return;
-  const all = loadAll(); delete all[today()]; saveAll(all);
-  showAll = false; renderStats(); renderLog(); renderChart();
+  const all = loadAll();
+  delete all[today()];
+  saveAll(all);
+  renderStats();
+  renderLog();
 }
 
 function exportExcel() {
   const all = loadAll();
-  if (Object.keys(all).length === 0) { alert('기록이 없습니다.'); return; }
+  if (Object.keys(all).length === 0) {
+    alert('기록이 없습니다. 운동을 기록한 후 다운로드해 주세요.');
+    return;
+  }
+
   const wb = XLSX.utils.book_new();
+
+  // Sheet 1: 상세 로그
   const detailRows = [['날짜', '운동', '횟수', '시간']];
   Object.keys(all).sort().forEach(date => {
-    (all[date] || []).forEach(l => detailRows.push([date, NAMES[l.exercise], l.count, l.time]));
+    (all[date] || []).forEach(l => {
+      detailRows.push([date, NAMES[l.exercise], l.count, l.time]);
+    });
   });
   const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
   wsDetail['!cols'] = [{wch:12},{wch:12},{wch:8},{wch:12}];
   XLSX.utils.book_append_sheet(wb, wsDetail, '상세 기록');
+
+  // Sheet 2: 일별 요약
   const summaryRows = [['날짜', 'Push-ups', 'Sit-ups', 'Squat', '총합']];
   Object.keys(all).sort().forEach(date => {
     const logs = all[date] || [];
@@ -640,45 +377,17 @@ function exportExcel() {
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
   wsSummary['!cols'] = [{wch:12},{wch:12},{wch:12},{wch:12},{wch:10}];
   XLSX.utils.book_append_sheet(wb, wsSummary, '일별 요약');
-  XLSX.writeFile(wb, 'workout_backup.xlsx');
+
+  const filename = 'workout_' + today() + '.xlsx';
+  XLSX.writeFile(wb, filename);
 }
 
-function importExcel(event) {
-  const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const wb = XLSX.read(e.target.result, { type: 'binary' });
-      const ws = wb.Sheets['상세 기록'];
-      if (!ws) { alert('올바른 백업 파일이 아닙니다.'); return; }
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 }).slice(1).filter(r => r.length >= 3);
-      if (rows.length === 0) { alert('가져올 데이터가 없습니다.'); return; }
-      const existing = loadAll();
-      let importedCount = 0;
-      rows.forEach(row => {
-        const date = String(row[0]||'').trim();
-        const exKey = NAMES_REVERSE[String(row[1]||'').trim()];
-        const count = parseInt(row[2], 10);
-        const time = String(row[3]||'').trim();
-        if (!date || !exKey || isNaN(count)) return;
-        if (!existing[date]) existing[date] = [];
-        const isDup = existing[date].some(l => l.exercise===exKey && l.count===count && l.time===time);
-        if (!isDup) { existing[date].push({ exercise: exKey, count, time, ts: 0 }); importedCount++; }
-      });
-      saveAll(existing);
-      showAll = false; renderStats(); renderLog(); renderChart();
-      alert(`✅ 가져오기 완료!\n${importedCount}개 기록을 복구했습니다.`);
-    } catch(err) { alert('파일을 읽는 중 오류가 발생했습니다.'); }
-    event.target.value = '';
-  };
-  reader.readAsBinaryString(file);
-}
-
+// 날짜 표시
 document.getElementById('today-date').textContent = fmt(new Date());
+
+// 초기 렌더
 renderStats();
 renderLog();
-renderChart();
-window.addEventListener('resize', renderChart);
 </script>
 </body>
 </html>
