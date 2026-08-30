@@ -219,18 +219,23 @@ ALL_ALIASES.sort((a, b) => b.length - a.length);
 function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 const BOOK_ALT = ALL_ALIASES.map(escapeRegExp).join('|');
 
+const NOT_MID_WORD = '(?<![가-힣])'; // 책 이름 약어가 다른 한글 단어 중간(예: "다시"의 "시")에 걸리는 것을 방지
 function buildFullRegex() {
-  return new RegExp(`(${BOOK_ALT})\\s*(\\d{1,3})\\s*장(?:\\s*(\\d{1,3})\\s*(?:[~\\-–,]\\s*(\\d{1,3})\\s*)?절)?`, 'g');
+  return new RegExp(`${NOT_MID_WORD}(${BOOK_ALT})\\s*(\\d{1,3})\\s*장(?:\\s*(\\d{1,3})\\s*(?:[~\\-–,]\\s*(\\d{1,3})\\s*)?절)?`, 'g');
 }
 function buildColonRegex() {
-  return new RegExp(`(${BOOK_ALT})\\s*(\\d{1,3})\\s*[:：]\\s*(\\d{1,3})(?:\\s*[~\\-–]\\s*(\\d{1,3}))?`, 'g');
+  return new RegExp(`${NOT_MID_WORD}(${BOOK_ALT})\\s*(\\d{1,3})\\s*[:：]\\s*(\\d{1,3})(?:\\s*[~\\-–]\\s*(\\d{1,3}))?`, 'g');
 }
 function buildHeaderRegex() {
   return new RegExp(`본문\\s*[:：]?\\s*(${BOOK_ALT})\\s*(\\d{1,3})\\s*장\\s*(\\d{1,3})(?:\\s*[~\\-–,]\\s*(\\d{1,3}))?\\s*절`);
 }
+function buildFullButoRegex() {
+  return new RegExp(`${NOT_MID_WORD}(${BOOK_ALT})\\s*(\\d{1,3})\\s*장\\s*(\\d{1,3})\\s*절\\s*부터\\s*(\\d{1,3})\\s*절\\s*까지`, 'g');
+}
+const RE_VERSE_BUTO = /(\d{1,3})\s*절\s*부터\s*(\d{1,3})\s*절\s*까지/g;
 const RE_VERSE_ONLY = /(\d{1,3})\s*(?:[~\-–,]\s*(\d{1,3}))?\s*절/g;
-const RE_FULL_TEST = new RegExp(`(${BOOK_ALT})\\s*(\\d{1,3})\\s*장`);
-const RE_COLON_TEST = new RegExp(`(${BOOK_ALT})\\s*(\\d{1,3})\\s*[:：]\\s*(\\d{1,3})`);
+const RE_FULL_TEST = new RegExp(`${NOT_MID_WORD}(${BOOK_ALT})\\s*(\\d{1,3})\\s*장`);
+const RE_COLON_TEST = new RegExp(`${NOT_MID_WORD}(${BOOK_ALT})\\s*(\\d{1,3})\\s*[:：]\\s*(\\d{1,3})`);
 
 function aliasToCanonical(alias) { return ALIAS_MAP[alias.trim()] || alias.trim(); }
 
@@ -254,14 +259,28 @@ function extractUnderlineSegments(para) {
   }
   return segments;
 }
-function findQuoteMarkSpan(para) {
-  const plain = stripMarkers(para);
-  const patterns = [/「([^」]{4,400})」/, /『([^』]{4,400})』/, /【([^】]{4,400})】/, /"([^"]{4,400})"/, /“([^”]{4,400})”/, /‘([^’]{4,400})’/];
-  for (const re of patterns) {
-    const m = re.exec(plain);
-    if (m) return m[1];
-  }
-  return null;
+const QUOTE_PATTERNS = [
+  /「([^」]{2,8000})」/g, /『([^』]{2,8000})』/g, /【([^】]{2,8000})】/g,
+  /"([^"]{2,8000})"/g, /“([^”]{2,8000})”/g, /‘([^’]{2,8000})’/g,
+];
+function findQuoteSpans(para) {
+  const spans = [];
+  QUOTE_PATTERNS.forEach(re => {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(para))) spans.push({ start: m.index, end: re.lastIndex, text: m[1] });
+  });
+  spans.sort((a, b) => a.start - b.start);
+  return spans;
+}
+function nearestQuoteSpan(para, refIndex) {
+  const spans = findQuoteSpans(para);
+  if (spans.length === 0) return null;
+  return spans.reduce((best, s) => {
+    const dist = Math.min(Math.abs(s.start - refIndex), Math.abs(s.end - refIndex));
+    const bestDist = Math.min(Math.abs(best.start - refIndex), Math.abs(best.end - refIndex));
+    return dist < bestDist ? s : best;
+  });
 }
 function splitVerses(rawContent, vStart, vEnd) {
   const content = stripMarkers(rawContent);
@@ -342,25 +361,29 @@ function extractContent(paragraphs, pIdx, mm, vStart, vEnd) {
   const expectedCount = vEnd - vStart + 1;
   const segments = extractUnderlineSegments(para);
 
-  if (segments.length > 0) {
-    if (expectedCount > 1 && segments.length === expectedCount) {
-      return { content: segments.map((s, i) => `${vStart + i} ${cleanText(s.text)}`).join('\n'), isParaphrase: false };
+  // 1) 밑줄이 절 개수와 정확히 일치하면 가장 신뢰도가 높은 경우로 우선 사용
+  if (expectedCount > 1 && segments.length === expectedCount) {
+    return { content: segments.map((s, i) => `${vStart + i} ${cleanText(s.text)}`).join('\n'), isParaphrase: false };
+  }
+
+  // 2) 인용 표시(따옴표/괄호)로 감싸인, 참조 위치에서 가장 가까운 구간을 사용
+  const qSpan = nearestQuoteSpan(para, mm.index);
+  if (qSpan) {
+    if (expectedCount > 1) {
+      const split = splitVerses(qSpan.text, vStart, vEnd);
+      if (split) return { content: split.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
     }
+    return { content: cleanText(qSpan.text), isParaphrase: false };
+  }
+
+  // 3) 밑줄은 있으나 절 개수와 안 맞는 경우, 이어붙여서 시도
+  if (segments.length > 0) {
     const joined = segments.map(s => s.text).join(' ');
     if (expectedCount > 1) {
       const split = splitVerses(joined, vStart, vEnd);
       if (split) return { content: split.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
     }
     return { content: cleanText(joined), isParaphrase: false };
-  }
-
-  const qSpan = findQuoteMarkSpan(para);
-  if (qSpan) {
-    if (expectedCount > 1) {
-      const split = splitVerses(qSpan, vStart, vEnd);
-      if (split) return { content: split.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
-    }
-    return { content: cleanText(qSpan), isParaphrase: false };
   }
 
   if (expectedCount > 1) {
@@ -370,17 +393,27 @@ function extractContent(paragraphs, pIdx, mm, vStart, vEnd) {
   }
 
   const plainPara = stripMarkers(para).trim();
-  if (plainPara.length <= 40) {
+  if (plainPara.length <= 60) {
     for (let j = pIdx + 1; j < Math.min(pIdx + 3, paragraphs.length); j++) {
       const next = paragraphs[j];
       const nextPlain = stripMarkers(next).trim();
       if (!nextPlain) continue;
-      if (looksLikeNewCitation(next)) break;
+
+      // 밑줄/따옴표로 실제 인용문을 찾을 수 있으면, 그 문단이 다음 인용을
+      // 소개하는 문장을 포함하고 있더라도(예: "...15장 1절을 보면...") 우선 사용한다.
       const segs2 = extractUnderlineSegments(next);
-      if (segs2.length > 0) {
-        if (expectedCount > 1 && segs2.length === expectedCount) {
-          return { content: segs2.map((s, i) => `${vStart + i} ${cleanText(s.text)}`).join('\n'), isParaphrase: false };
+      if (expectedCount > 1 && segs2.length === expectedCount) {
+        return { content: segs2.map((s, i) => `${vStart + i} ${cleanText(s.text)}`).join('\n'), isParaphrase: false };
+      }
+      const qSpan2 = nearestQuoteSpan(next, 0);
+      if (qSpan2) {
+        if (expectedCount > 1) {
+          const split2 = splitVerses(qSpan2.text, vStart, vEnd);
+          if (split2) return { content: split2.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
         }
+        return { content: cleanText(qSpan2.text), isParaphrase: false };
+      }
+      if (segs2.length > 0) {
         const joined2 = segs2.map(s => s.text).join(' ');
         if (expectedCount > 1) {
           const split2 = splitVerses(joined2, vStart, vEnd);
@@ -392,6 +425,10 @@ function extractContent(paragraphs, pIdx, mm, vStart, vEnd) {
         const split3 = splitVerses(nextPlain, vStart, vEnd);
         if (split3) return { content: split3.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
       }
+
+      // 여기까지 왔다면 이 문단엔 인용 표시가 없다. 새로운 인용을 소개하는
+      // 문장으로 보이면 그 텍스트를 엉뚱하게 가져오지 않도록 멈춘다.
+      if (looksLikeNewCitation(next)) break;
       return { content: cleanText(nextPlain), isParaphrase: false };
     }
   }
@@ -419,10 +456,25 @@ function extractCitations(paragraphs, ctx) {
     while ((m = reColon.exec(para))) {
       matches.push({ index: m.index, end: reColon.lastIndex, hasVerse: true, book: m[1], chapter: m[2], vStart: m[3], vEnd: m[4] || m[3] });
     }
-    matches.sort((a, b) => a.index - b.index);
+    const reFullButo = buildFullButoRegex();
+    while ((m = reFullButo.exec(para))) {
+      matches.push({ index: m.index, end: reFullButo.lastIndex, hasVerse: true, book: m[1], chapter: m[2], vStart: m[3], vEnd: m[4] });
+    }
+    // 시작 위치가 같으면 더 넓게 매칭된 것을 우선한다
+    matches.sort((a, b) => a.index - b.index || (b.end - b.index) - (a.end - a.index));
     const cleaned = [];
     let lastEnd = -1;
     matches.forEach(mm => { if (mm.index >= lastEnd) { cleaned.push(mm); lastEnd = mm.end; } });
+
+    RE_VERSE_BUTO.lastIndex = 0;
+    while ((m = RE_VERSE_BUTO.exec(para))) {
+      const mEnd = RE_VERSE_BUTO.lastIndex;
+      const overlaps = cleaned.some(mm => m.index < mm.end && mEnd > mm.index);
+      if (!overlaps) {
+        cleaned.push({ index: m.index, end: mEnd, hasVerse: true, book: null, chapter: null, vStart: m[1], vEnd: m[2] });
+      }
+    }
+    cleaned.sort((a, b) => a.index - b.index);
 
     RE_VERSE_ONLY.lastIndex = 0;
     while ((m = RE_VERSE_ONLY.exec(para))) {

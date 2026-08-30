@@ -60,15 +60,21 @@ for _name, _aliases in BOOKS:
 ALL_ALIASES.sort(key=len, reverse=True)
 BOOK_ALT = "|".join(re.escape(a) for a in ALL_ALIASES)
 
+_NOT_MID_WORD = r"(?<![가-힣])"  # 책 이름 약어가 다른 한글 단어 중간(예: "다시"의 "시")에 걸리는 것을 방지
+
 RE_FULL = re.compile(
-    rf"({BOOK_ALT})\s*(\d{{1,3}})\s*장(?:\s*(\d{{1,3}})\s*(?:[~\-–,]\s*(\d{{1,3}})\s*)?절)?"
+    rf"{_NOT_MID_WORD}({BOOK_ALT})\s*(\d{{1,3}})\s*장(?:\s*(\d{{1,3}})\s*(?:[~\-–,]\s*(\d{{1,3}})\s*)?절)?"
 )
 RE_COLON = re.compile(
-    rf"({BOOK_ALT})\s*(\d{{1,3}})\s*[:：]\s*(\d{{1,3}})(?:\s*[~\-–]\s*(\d{{1,3}}))?"
+    rf"{_NOT_MID_WORD}({BOOK_ALT})\s*(\d{{1,3}})\s*[:：]\s*(\d{{1,3}})(?:\s*[~\-–]\s*(\d{{1,3}}))?"
 )
 RE_HEADER = re.compile(
     rf"본문\s*[:：]?\s*({BOOK_ALT})\s*(\d{{1,3}})\s*장\s*(\d{{1,3}})(?:\s*[~\-–,]\s*(\d{{1,3}}))?\s*절"
 )
+RE_FULL_BUTO = re.compile(
+    rf"{_NOT_MID_WORD}({BOOK_ALT})\s*(\d{{1,3}})\s*장\s*(\d{{1,3}})\s*절\s*부터\s*(\d{{1,3}})\s*절\s*까지"
+)
+RE_VERSE_BUTO = re.compile(r"(\d{1,3})\s*절\s*부터\s*(\d{1,3})\s*절\s*까지")
 RE_VERSE_ONLY = re.compile(r"(\d{1,3})\s*(?:[~\-–,]\s*(\d{1,3}))?\s*절")
 
 
@@ -99,17 +105,27 @@ def extract_underline_segments(para):
     return segments
 
 
-def find_quote_mark_span(para):
-    plain = strip_markers(para)
-    patterns = [
-        r"「([^」]{4,400})」", r"『([^』]{4,400})』", r"【([^】]{4,400})】",
-        r'"([^"]{4,400})"', r"“([^”]{4,400})”", r"‘([^’]{4,400})’",
-    ]
-    for pat in patterns:
-        m = re.search(pat, plain)
-        if m:
-            return m.group(1)
-    return None
+QUOTE_PATTERNS = [
+    r"「([^」]{2,8000})」", r"『([^』]{2,8000})』", r"【([^】]{2,8000})】",
+    r'"([^"]{2,8000})"', r"“([^”]{2,8000})”", r"‘([^’]{2,8000})’",
+]
+
+
+def find_quote_spans(para):
+    """문단 안의 모든 따옴표/괄호로 감싸인 구간을 찾는다 (마커 포함 원문 기준 위치)."""
+    spans = []
+    for pat in QUOTE_PATTERNS:
+        for m in re.finditer(pat, para):
+            spans.append({"start": m.start(), "end": m.end(), "text": m.group(1)})
+    spans.sort(key=lambda s: s["start"])
+    return spans
+
+
+def nearest_quote_span(para, ref_index):
+    spans = find_quote_spans(para)
+    if not spans:
+        return None
+    return min(spans, key=lambda s: min(abs(s["start"] - ref_index), abs(s["end"] - ref_index)))
 
 
 def split_verses(raw_content, v_start, v_end):
@@ -191,24 +207,29 @@ def extract_content(paragraphs, p_idx, m_end, m_index, v_start, v_end):
     expected_count = v_end - v_start + 1
     segments = extract_underline_segments(para)
 
+    # 1) 밑줄이 절 개수와 정확히 일치하면 가장 신뢰도가 높은 경우로 우선 사용
+    if segments and expected_count > 1 and len(segments) == expected_count:
+        lines = [f"{v_start + i} {clean_text(s['text'])}" for i, s in enumerate(segments)]
+        return "\n".join(lines), False
+
+    # 2) 인용 표시(따옴표/괄호)로 감싸인, 참조 위치에서 가장 가까운 구간을 사용
+    q_span = nearest_quote_span(para, m_index)
+    if q_span:
+        text = q_span["text"]
+        if expected_count > 1:
+            split = split_verses(text, v_start, v_end)
+            if split:
+                return "\n".join(f"{p['num']} {clean_text(p['text'])}" for p in split), False
+        return clean_text(text), False
+
+    # 3) 밑줄은 있으나 절 개수와 안 맞는 경우, 이어붙여서 시도
     if segments:
-        if expected_count > 1 and len(segments) == expected_count:
-            lines = [f"{v_start + i} {clean_text(s['text'])}" for i, s in enumerate(segments)]
-            return "\n".join(lines), False
         joined = " ".join(s["text"] for s in segments)
         if expected_count > 1:
             split = split_verses(joined, v_start, v_end)
             if split:
                 return "\n".join(f"{p['num']} {clean_text(p['text'])}" for p in split), False
         return clean_text(joined), False
-
-    q_span = find_quote_mark_span(para)
-    if q_span:
-        if expected_count > 1:
-            split = split_verses(q_span, v_start, v_end)
-            if split:
-                return "\n".join(f"{p['num']} {clean_text(p['text'])}" for p in split), False
-        return clean_text(q_span), False
 
     if expected_count > 1:
         after = para[m_end:]
@@ -217,19 +238,28 @@ def extract_content(paragraphs, p_idx, m_end, m_index, v_start, v_end):
             return "\n".join(f"{p['num']} {clean_text(p['text'])}" for p in split), False
 
     plain_para = strip_markers(para).strip()
-    if len(plain_para) <= 40:
+    if len(plain_para) <= 60:
         for j in range(p_idx + 1, min(p_idx + 3, len(paragraphs))):
             nxt = paragraphs[j]
             next_plain = strip_markers(nxt).strip()
             if not next_plain:
                 continue
-            if looks_like_new_citation(nxt):
-                break
+
+            # 밑줄/따옴표로 실제 인용문을 찾을 수 있으면, 그 문단이 다음 인용을
+            # 소개하는 문장을 포함하고 있더라도(예: "...15장 1절을 보면...") 우선 사용한다.
             segs2 = extract_underline_segments(nxt)
+            if expected_count > 1 and len(segs2) == expected_count:
+                lines = [f"{v_start + i} {clean_text(s['text'])}" for i, s in enumerate(segs2)]
+                return "\n".join(lines), False
+            q_span2 = nearest_quote_span(nxt, 0)
+            if q_span2:
+                text2 = q_span2["text"]
+                if expected_count > 1:
+                    split2 = split_verses(text2, v_start, v_end)
+                    if split2:
+                        return "\n".join(f"{p['num']} {clean_text(p['text'])}" for p in split2), False
+                return clean_text(text2), False
             if segs2:
-                if expected_count > 1 and len(segs2) == expected_count:
-                    lines = [f"{v_start + i} {clean_text(s['text'])}" for i, s in enumerate(segs2)]
-                    return "\n".join(lines), False
                 joined2 = " ".join(s["text"] for s in segs2)
                 if expected_count > 1:
                     split2 = split_verses(joined2, v_start, v_end)
@@ -240,6 +270,11 @@ def extract_content(paragraphs, p_idx, m_end, m_index, v_start, v_end):
                 split3 = split_verses(next_plain, v_start, v_end)
                 if split3:
                     return "\n".join(f"{p['num']} {clean_text(p['text'])}" for p in split3), False
+
+            # 여기까지 왔다면 이 문단엔 인용 표시가 없다. 새로운 인용을 소개하는
+            # 문장으로 보이면 그 텍스트를 엉뚱하게 가져오지 않도록 멈춘다.
+            if looks_like_new_citation(nxt):
+                break
             return clean_text(next_plain), False
 
     plain = strip_markers(para)
@@ -267,7 +302,14 @@ def extract_citations(paragraphs, ctx):
                 "book": m.group(1), "chapter": m.group(2),
                 "v_start": m.group(3), "v_end": m.group(4) or m.group(3),
             })
-        matches.sort(key=lambda x: x["index"])
+        for m in RE_FULL_BUTO.finditer(para):
+            matches.append({
+                "index": m.start(), "end": m.end(), "has_verse": True,
+                "book": m.group(1), "chapter": m.group(2),
+                "v_start": m.group(3), "v_end": m.group(4),
+            })
+        # 시작 위치가 같으면 더 넓게 매칭된(범위를 온전히 포함하는) 것을 우선한다
+        matches.sort(key=lambda x: (x["index"], -(x["end"] - x["index"])))
 
         cleaned = []
         last_end = -1
@@ -275,6 +317,16 @@ def extract_citations(paragraphs, ctx):
             if mm["index"] >= last_end:
                 cleaned.append(mm)
                 last_end = mm["end"]
+
+        for m in RE_VERSE_BUTO.finditer(para):
+            overlaps = any(m.start() < mm["end"] and m.end() > mm["index"] for mm in cleaned)
+            if not overlaps:
+                cleaned.append({
+                    "index": m.start(), "end": m.end(), "has_verse": True,
+                    "book": None, "chapter": None,
+                    "v_start": m.group(1), "v_end": m.group(2),
+                })
+        cleaned.sort(key=lambda x: x["index"])
 
         for m in RE_VERSE_ONLY.finditer(para):
             overlaps = any(m.start() < mm["end"] and m.end() > mm["index"] for mm in cleaned)
