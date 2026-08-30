@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="성경 인용 추출기">
+<title>📖 설교문 성경 인용 추출기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    background: #f2f2f7;
+    min-height: 100vh;
+    padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 16px);
+    padding-top: max(env(safe-area-inset-top, 20px), 20px);
+  }
+
+  .header { text-align: center; padding: 16px 0 12px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #1c1c1e; }
+  .header .sub { font-size: 13px; color: #8e8e93; margin-top: 4px; }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .card-title { font-size: 15px; font-weight: 600; color: #8e8e93; margin-bottom: 10px; }
+
+  .dropzone {
+    border: 1.5px dashed #c7c7cc; border-radius: 12px; padding: 24px 12px;
+    text-align: center; cursor: pointer; transition: all 0.15s; background: #f9f9f9;
+  }
+  .dropzone.drag { border-color: #007aff; background: #eef6ff; }
+  .dropzone .icon { font-size: 30px; margin-bottom: 6px; }
+  .dropzone .txt { font-size: 14px; color: #3a3a3c; font-weight: 500; }
+  .dropzone .txt2 { font-size: 12px; color: #8e8e93; margin-top: 4px; }
+  #file-input { display: none; }
+
+  .filename-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 10px; font-size: 13px; color: #3a3a3c; background: #f2f2f7;
+    border-radius: 8px; padding: 8px 10px;
+  }
+  .filename-row .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .filename-row .status { color: #007aff; font-weight: 600; flex-shrink: 0; margin-left: 8px; }
+
+  .field-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .field {
+    flex: 1; min-width: 90px; height: 40px;
+    border: 1.5px solid #d1d1d6; border-radius: 9px;
+    font-size: 14px; padding: 0 10px; color: #1c1c1e; background: #f9f9f9; outline: none;
+  }
+  .field:focus { border-color: #007aff; background: white; }
+  .field.warn { border-color: #ff9500; background: #fff8ee; }
+  .field-label { font-size: 11px; color: #8e8e93; margin-bottom: 4px; display: block; }
+
+  .hint { font-size: 12px; color: #8e8e93; line-height: 1.5; margin-top: 4px; }
+
+  .btn {
+    border: none; border-radius: 12px; height: 46px; padding: 0 16px;
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+    width: 100%; margin-bottom: 8px;
+  }
+  .btn:active { opacity: 0.75; }
+  .btn-primary { background: #007aff; color: white; }
+  .btn-secondary { background: #eef2ff; color: #007aff; }
+  .btn-green { background: #34c759; color: white; }
+  .btn-red { background: #fff0f0; color: #ff3b30; }
+  .btn-small { width: auto; height: 34px; font-size: 13px; padding: 0 12px; border-radius: 9px; margin: 0; }
+
+  .item-card {
+    background: #f9f9f9; border-radius: 14px; padding: 14px; margin-bottom: 10px;
+    border: 1px solid #ececec;
+  }
+  .item-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+  }
+  .item-num {
+    background: #007aff; color: white; font-size: 12px; font-weight: 700;
+    border-radius: 20px; padding: 3px 10px;
+  }
+  .item-del {
+    background: none; border: none; color: #c7c7cc; font-size: 16px; cursor: pointer;
+    padding: 2px 6px; border-radius: 6px;
+  }
+  .item-del:active { color: #ff3b30; background: #fff0f0; }
+
+  .paraphrase-row {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 13px; color: #3a3a3c;
+  }
+  .paraphrase-row input { width: 16px; height: 16px; accent-color: #ff9500; }
+
+  .content-area {
+    width: 100%; min-height: 70px; border: 1.5px solid #d1d1d6; border-radius: 9px;
+    font-size: 14px; padding: 10px; color: #1c1c1e; background: white; outline: none;
+    resize: vertical; line-height: 1.5; font-family: inherit;
+  }
+  .content-area:focus { border-color: #007aff; }
+
+  .output-box {
+    width: 100%; min-height: 160px; border: 1.5px solid #d1d1d6; border-radius: 10px;
+    font-size: 13px; padding: 12px; color: #1c1c1e; background: #f9f9f9;
+    white-space: pre-wrap; word-break: break-word; line-height: 1.6;
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  }
+  .empty-msg { text-align: center; font-size: 13px; color: #c7c7cc; padding: 24px 0; }
+
+  .debug-toggle {
+    font-size: 13px; color: #007aff; background: none; border: none; cursor: pointer;
+    padding: 4px 0; font-weight: 500;
+  }
+  .debug-box {
+    margin-top: 10px; max-height: 260px; overflow-y: auto; font-size: 12px; color: #6c6c70;
+    background: #f2f2f7; border-radius: 8px; padding: 10px; white-space: pre-wrap; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📖 설교문 성경 인용 추출기</h1>
+  <div class="sub">.docx 설교문에서 성경 인용 구절을 자동으로 찾아드립니다</div>
+</div>
+
+<div class="card">
+  <div class="card-title">1. 설교문 업로드</div>
+  <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+    <div class="icon">📄</div>
+    <div class="txt">클릭하거나 파일을 끌어다 놓으세요</div>
+    <div class="txt2">.docx 파일만 지원됩니다</div>
+  </div>
+  <input type="file" id="file-input" accept=".docx">
+  <div class="filename-row" id="filename-row" style="display:none">
+    <span class="name" id="filename-text"></span>
+    <span class="status" id="filename-status"></span>
+  </div>
+</div>
+
+<div class="card" id="context-card" style="display:none">
+  <div class="card-title">2. 본문 기준 정보 (책 이름 생략된 인용 추론에 사용)</div>
+  <div class="field-row">
+    <div style="flex:2; min-width:120px;">
+      <span class="field-label">책 이름</span>
+      <input class="field" id="ctx-book" placeholder="예: 사도행전">
+    </div>
+    <div style="flex:1; min-width:70px;">
+      <span class="field-label">장</span>
+      <input class="field" id="ctx-chapter" placeholder="예: 18" inputmode="numeric">
+    </div>
+  </div>
+  <div class="hint">자동 인식이 틀렸거나 비어있다면 직접 입력한 뒤 아래 버튼을 눌러 다시 추출하세요.</div>
+  <button class="btn btn-secondary" style="margin-top:10px" onclick="reprocessWithContext()">이 기준으로 다시 추출</button>
+</div>
+
+<div class="card" id="results-card" style="display:none">
+  <div class="card-title">3. 추출 결과 (직접 수정 가능)</div>
+  <div id="items-list"></div>
+  <button class="btn btn-secondary" onclick="addItem()">+ 항목 추가</button>
+</div>
+
+<div class="card" id="output-card" style="display:none">
+  <div class="card-title">4. 최종 결과</div>
+  <div class="output-box" id="output-box"></div>
+  <div style="display:flex; gap:8px; margin-top:10px;">
+    <button class="btn btn-green" style="margin-bottom:0" onclick="copyOutput()">📋 복사하기</button>
+    <button class="btn btn-secondary" style="margin-bottom:0" onclick="downloadOutput()">⬇️ .txt 다운로드</button>
+  </div>
+</div>
+
+<div class="card" id="debug-card" style="display:none">
+  <button class="debug-toggle" onclick="toggleDebug()">🔍 추출된 원문 텍스트 보기 (디버그)</button>
+  <div class="debug-box" id="debug-box" style="display:none"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script>
+/* ---------------- Bible book dictionary ---------------- */
+const BOOKS = [
+  ['창세기', ['창세기','창']], ['출애굽기', ['출애굽기','출']], ['레위기', ['레위기','레']],
+  ['민수기', ['민수기','민']], ['신명기', ['신명기','신']], ['여호수아', ['여호수아','수']],
+  ['사사기', ['사사기','삿']], ['룻기', ['룻기','룻']], ['사무엘상', ['사무엘상','삼상']],
+  ['사무엘하', ['사무엘하','삼하']], ['열왕기상', ['열왕기상','왕상']], ['열왕기하', ['열왕기하','왕하']],
+  ['역대상', ['역대상','대상']], ['역대하', ['역대하','대하']], ['에스라', ['에스라','스']],
+  ['느헤미야', ['느헤미야','느']], ['에스더', ['에스더','에']], ['욥기', ['욥기','욥']],
+  ['시편', ['시편','시']], ['잠언', ['잠언','잠']], ['전도서', ['전도서','전']],
+  ['아가', ['아가']], ['이사야', ['이사야','사']], ['예레미야', ['예레미야','렘']],
+  ['예레미야애가', ['예레미야애가','애가']], ['에스겔', ['에스겔','겔']], ['다니엘', ['다니엘','단']],
+  ['호세아', ['호세아','호']], ['요엘', ['요엘','욜']], ['아모스', ['아모스','암']],
+  ['오바댜', ['오바댜','옵']], ['요나', ['요나','욘']], ['미가', ['미가']],
+  ['나훔', ['나훔']], ['하박국', ['하박국','합']], ['스바냐', ['스바냐','습']],
+  ['학개', ['학개','학']], ['스가랴', ['스가랴','슥']], ['말라기', ['말라기','말']],
+  ['마태복음', ['마태복음','마태','마']], ['마가복음', ['마가복음','마가','막']],
+  ['누가복음', ['누가복음','누가','눅']], ['요한복음', ['요한복음','요']],
+  ['사도행전', ['사도행전','행']], ['로마서', ['로마서','롬']],
+  ['고린도전서', ['고린도전서','고전']], ['고린도후서', ['고린도후서','고후']],
+  ['갈라디아서', ['갈라디아서','갈']], ['에베소서', ['에베소서','엡']],
+  ['빌립보서', ['빌립보서','빌']], ['골로새서', ['골로새서','골']],
+  ['데살로니가전서', ['데살로니가전서','살전']], ['데살로니가후서', ['데살로니가후서','살후']],
+  ['디모데전서', ['디모데전서','딤전']], ['디모데후서', ['디모데후서','딤후']],
+  ['디도서', ['디도서','딛']], ['빌레몬서', ['빌레몬서','몬']], ['히브리서', ['히브리서','히']],
+  ['야고보서', ['야고보서','약']], ['베드로전서', ['베드로전서','벧전']],
+  ['베드로후서', ['베드로후서','벧후']], ['요한일서', ['요한일서','요일']],
+  ['요한이서', ['요한이서','요이']], ['요한삼서', ['요한삼서','요삼']],
+  ['유다서', ['유다서','유']], ['요한계시록', ['요한계시록','계시록','계']],
+];
+const ALIAS_MAP = {};
+const ALL_ALIASES = [];
+BOOKS.forEach(([name, aliases]) => {
+  aliases.forEach(a => { ALIAS_MAP[a] = name; ALL_ALIASES.push(a); });
+});
+ALL_ALIASES.sort((a, b) => b.length - a.length);
+
+function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+const BOOK_ALT = ALL_ALIASES.map(escapeRegExp).join('|');
+
+function buildFullRegex() {
+  return new RegExp(`(${BOOK_ALT})\\s*(\\d{1,3})\\s*장(?:\\s*(\\d{1,3})\\s*(?:[~\\-–,]\\s*(\\d{1,3})\\s*)?절)?`, 'g');
+}
+function buildColonRegex() {
+  return new RegExp(`(${BOOK_ALT})\\s*(\\d{1,3})\\s*[:：]\\s*(\\d{1,3})(?:\\s*[~\\-–]\\s*(\\d{1,3}))?`, 'g');
+}
+function buildHeaderRegex() {
+  return new RegExp(`본문\\s*[:：]?\\s*(${BOOK_ALT})\\s*(\\d{1,3})\\s*장\\s*(\\d{1,3})(?:\\s*[~\\-–,]\\s*(\\d{1,3}))?\\s*절`);
+}
+const RE_VERSE_ONLY = /(\d{1,3})\s*(?:[~\-–,]\s*(\d{1,3}))?\s*절/g;
+const RE_FULL_TEST = new RegExp(`(${BOOK_ALT})\\s*(\\d{1,3})\\s*장`);
+const RE_COLON_TEST = new RegExp(`(${BOOK_ALT})\\s*(\\d{1,3})\\s*[:：]\\s*(\\d{1,3})`);
+
+function aliasToCanonical(alias) { return ALIAS_MAP[alias.trim()] || alias.trim(); }
+
+/* ---------------- text helpers ---------------- */
+function stripMarkers(s) { return s.replace(/[\u0001\u0002]/g, ''); }
+function cleanText(s) {
+  return stripMarkers(s)
+    .replace(/[【】「」『』]/g, '')
+    .replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\s*\n\s*/g, ' ')
+    .trim();
+}
+function extractUnderlineSegments(para) {
+  const segments = [];
+  const re = /\u0001([^\u0002]*)\u0002/g;
+  let m;
+  while ((m = re.exec(para))) {
+    const text = m[1].trim();
+    if (text) segments.push({ index: m.index, text });
+  }
+  return segments;
+}
+function findQuoteMarkSpan(para) {
+  const plain = stripMarkers(para);
+  const patterns = [/「([^」]{4,400})」/, /『([^』]{4,400})』/, /【([^】]{4,400})】/, /"([^"]{4,400})"/, /“([^”]{4,400})”/, /‘([^’]{4,400})’/];
+  for (const re of patterns) {
+    const m = re.exec(plain);
+    if (m) return m[1];
+  }
+  return null;
+}
+function splitVerses(rawContent, vStart, vEnd) {
+  const content = stripMarkers(rawContent);
+  const nums = [];
+  for (let n = vStart; n <= vEnd; n++) nums.push(n);
+  if (nums.length < 2) return null;
+  const positions = [];
+  let searchFrom = 0;
+  for (const n of nums) {
+    const re = new RegExp('(?:^|[^0-9])(' + n + ')(?=[^0-9]|$)');
+    const slice = content.slice(searchFrom);
+    const m = re.exec(slice);
+    if (!m) return null;
+    const numIdx = searchFrom + m.index + m[0].indexOf(m[1]);
+    positions.push(numIdx);
+    searchFrom = numIdx + String(n).length;
+  }
+  const parts = [];
+  for (let i = 0; i < positions.length; i++) {
+    const start = positions[i] + String(nums[i]).length;
+    const end = i + 1 < positions.length ? positions[i + 1] : content.length;
+    const text = content.slice(start, end).trim();
+    if (!text) return null;
+    parts.push({ num: nums[i], text });
+  }
+  return parts;
+}
+function extractSentenceAround(text, idx) {
+  const enders = ['.', '?', '!', '\n'];
+  let start = 0;
+  for (let i = idx; i >= 0; i--) { if (enders.includes(text[i])) { start = i + 1; break; } }
+  let end = text.length;
+  for (let i = idx; i < text.length; i++) { if (enders.includes(text[i])) { end = i + 1; break; } }
+  return text.slice(start, end).trim();
+}
+function looksLikeNewCitation(para) {
+  const plain = stripMarkers(para);
+  return RE_FULL_TEST.test(plain) || RE_COLON_TEST.test(plain);
+}
+
+/* ---------------- docx -> paragraphs ---------------- */
+function htmlToParagraphs(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const paras = [];
+  doc.body.querySelectorAll('p, li').forEach(p => paras.push(nodeToMarkedText(p)));
+  return paras.filter(t => t.trim().length > 0);
+}
+function nodeToMarkedText(node) {
+  let out = '';
+  node.childNodes.forEach(child => {
+    if (child.nodeType === Node.TEXT_NODE) {
+      out += child.textContent;
+    } else if (child.nodeType === Node.ELEMENT_NODE) {
+      const tag = child.tagName.toLowerCase();
+      const inner = nodeToMarkedText(child);
+      if (tag === 'u') out += '\u0001' + inner + '\u0002';
+      else if (tag === 'br') out += '\n';
+      else out += inner;
+    }
+  });
+  return out;
+}
+
+/* ---------------- context detection ---------------- */
+function detectHeaderContext(paragraphs) {
+  const re = buildHeaderRegex();
+  for (let i = 0; i < Math.min(paragraphs.length, 20); i++) {
+    const plain = stripMarkers(paragraphs[i]);
+    const m = re.exec(plain);
+    if (m) return { book: aliasToCanonical(m[1]), chapter: m[2] };
+  }
+  return { book: '', chapter: '' };
+}
+
+/* ---------------- content extraction ---------------- */
+function extractContent(paragraphs, pIdx, mm, vStart, vEnd) {
+  const para = paragraphs[pIdx];
+  const expectedCount = vEnd - vStart + 1;
+  const segments = extractUnderlineSegments(para);
+
+  if (segments.length > 0) {
+    if (expectedCount > 1 && segments.length === expectedCount) {
+      return { content: segments.map((s, i) => `${vStart + i} ${cleanText(s.text)}`).join('\n'), isParaphrase: false };
+    }
+    const joined = segments.map(s => s.text).join(' ');
+    if (expectedCount > 1) {
+      const split = splitVerses(joined, vStart, vEnd);
+      if (split) return { content: split.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
+    }
+    return { content: cleanText(joined), isParaphrase: false };
+  }
+
+  const qSpan = findQuoteMarkSpan(para);
+  if (qSpan) {
+    if (expectedCount > 1) {
+      const split = splitVerses(qSpan, vStart, vEnd);
+      if (split) return { content: split.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
+    }
+    return { content: cleanText(qSpan), isParaphrase: false };
+  }
+
+  if (expectedCount > 1) {
+    const after = para.slice(mm.end);
+    const split = splitVerses(after, vStart, vEnd);
+    if (split) return { content: split.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
+  }
+
+  const plainPara = stripMarkers(para).trim();
+  if (plainPara.length <= 40) {
+    for (let j = pIdx + 1; j < Math.min(pIdx + 3, paragraphs.length); j++) {
+      const next = paragraphs[j];
+      const nextPlain = stripMarkers(next).trim();
+      if (!nextPlain) continue;
+      if (looksLikeNewCitation(next)) break;
+      const segs2 = extractUnderlineSegments(next);
+      if (segs2.length > 0) {
+        if (expectedCount > 1 && segs2.length === expectedCount) {
+          return { content: segs2.map((s, i) => `${vStart + i} ${cleanText(s.text)}`).join('\n'), isParaphrase: false };
+        }
+        const joined2 = segs2.map(s => s.text).join(' ');
+        if (expectedCount > 1) {
+          const split2 = splitVerses(joined2, vStart, vEnd);
+          if (split2) return { content: split2.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
+        }
+        return { content: cleanText(joined2), isParaphrase: false };
+      }
+      if (expectedCount > 1) {
+        const split3 = splitVerses(nextPlain, vStart, vEnd);
+        if (split3) return { content: split3.map(p => `${p.num} ${cleanText(p.text)}`).join('\n'), isParaphrase: false };
+      }
+      return { content: cleanText(nextPlain), isParaphrase: false };
+    }
+  }
+
+  const plain = stripMarkers(para);
+  const sentence = extractSentenceAround(plain, mm.index);
+  return { content: cleanText(sentence), isParaphrase: true };
+}
+
+/* ---------------- citation extraction ---------------- */
+function extractCitations(paragraphs, ctx) {
+  const items = [];
+  let lastBook = ctx.book || '';
+  let lastChapter = ctx.chapter || '';
+  let order = 0;
+
+  paragraphs.forEach((para, pIdx) => {
+    const matches = [];
+    let m;
+    const reFull = buildFullRegex();
+    while ((m = reFull.exec(para))) {
+      matches.push({ index: m.index, end: reFull.lastIndex, hasVerse: !!m[3], book: m[1], chapter: m[2], vStart: m[3], vEnd: m[4] || m[3] });
+    }
+    const reColon = buildColonRegex();
+    while ((m = reColon.exec(para))) {
+      matches.push({ index: m.index, end: reColon.lastIndex, hasVerse: true, book: m[1], chapter: m[2], vStart: m[3], vEnd: m[4] || m[3] });
+    }
+    matches.sort((a, b) => a.index - b.index);
+    const cleaned = [];
+    let lastEnd = -1;
+    matches.forEach(mm => { if (mm.index >= lastEnd) { cleaned.push(mm); lastEnd = mm.end; } });
+
+    RE_VERSE_ONLY.lastIndex = 0;
+    while ((m = RE_VERSE_ONLY.exec(para))) {
+      const mEnd = RE_VERSE_ONLY.lastIndex;
+      const overlaps = cleaned.some(mm => m.index < mm.end && mEnd > mm.index);
+      if (!overlaps) {
+        cleaned.push({ index: m.index, end: mEnd, hasVerse: true, book: null, chapter: null, vStart: m[1], vEnd: m[2] || m[1] });
+      }
+    }
+    cleaned.sort((a, b) => a.index - b.index);
+
+    cleaned.forEach(mm => {
+      const book = mm.book ? aliasToCanonical(mm.book) : (lastBook || '');
+      const chapter = mm.chapter || lastChapter || '';
+      lastBook = book;
+      lastChapter = chapter;
+      if (!mm.hasVerse) return;
+      order++;
+      const vStart = parseInt(mm.vStart, 10);
+      const vEnd = mm.vEnd ? parseInt(mm.vEnd, 10) : vStart;
+      const { content, isParaphrase } = extractContent(paragraphs, pIdx, mm, vStart, vEnd);
+      items.push({ id: 'c' + order + '_' + Date.now() + Math.random().toString(36).slice(2, 6), book, chapter, vStart, vEnd, content, isParaphrase });
+    });
+  });
+  return items;
+}
+
+/* ---------------- state & UI ---------------- */
+const state = { items: [], rawParagraphs: [] };
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('file-input');
+['dragenter', 'dragover'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('drag'); }));
+dropzone.addEventListener('drop', e => {
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) handleFile(file);
+});
+
+async function handleFile(file) {
+  if (!file.name.toLowerCase().endsWith('.docx')) { alert('.docx 파일만 업로드할 수 있습니다.'); return; }
+  document.getElementById('filename-row').style.display = 'flex';
+  document.getElementById('filename-text').textContent = file.name;
+  document.getElementById('filename-status').textContent = '분석 중...';
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.convertToHtml({ arrayBuffer }, { styleMap: ['u => u'] });
+    const paragraphs = htmlToParagraphs(result.value);
+    if (paragraphs.length === 0) { alert('문서에서 텍스트를 찾을 수 없습니다.'); document.getElementById('filename-status').textContent = ''; return; }
+    state.rawParagraphs = paragraphs;
+    const ctx = detectHeaderContext(paragraphs);
+    document.getElementById('ctx-book').value = ctx.book || '';
+    document.getElementById('ctx-chapter').value = ctx.chapter || '';
+    document.getElementById('context-card').style.display = 'block';
+    runExtraction(ctx);
+    document.getElementById('filename-status').textContent = '완료';
+  } catch (err) {
+    console.error(err);
+    alert('문서를 읽는 중 오류가 발생했습니다: ' + err.message);
+    document.getElementById('filename-status').textContent = '오류';
+  }
+}
+
+function runExtraction(ctx) {
+  state.items = extractCitations(state.rawParagraphs, ctx);
+  document.getElementById('results-card').style.display = 'block';
+  document.getElementById('output-card').style.display = 'block';
+  document.getElementById('debug-card').style.display = 'block';
+  renderItems();
+  updateOutput();
+  renderDebug();
+}
+
+function reprocessWithContext() {
+  const ctx = { book: document.getElementById('ctx-book').value.trim(), chapter: document.getElementById('ctx-chapter').value.trim() };
+  if (state.rawParagraphs.length === 0) { alert('먼저 설교문 파일을 업로드해주세요.'); return; }
+  runExtraction(ctx);
+}
+
+function renderItems() {
+  const list = document.getElementById('items-list');
+  if (state.items.length === 0) {
+    list.innerHTML = '<div class="empty-msg">인용을 찾지 못했습니다. 아래에서 직접 추가해주세요.</div>';
+    return;
+  }
+  list.innerHTML = state.items.map((it, idx) => `
+    <div class="item-card">
+      <div class="item-head">
+        <span class="item-num">${idx + 1}</span>
+        <button class="item-del" onclick="deleteItem('${it.id}')">🗑</button>
+      </div>
+      <div class="field-row">
+        <div style="flex:2; min-width:110px;">
+          <span class="field-label">책 이름</span>
+          <input class="field ${it.book ? '' : 'warn'}" value="${escapeHtml(it.book)}" oninput="updateField('${it.id}','book',this.value)">
+        </div>
+        <div style="flex:1; min-width:60px;">
+          <span class="field-label">장</span>
+          <input class="field ${it.chapter ? '' : 'warn'}" value="${escapeHtml(String(it.chapter))}" inputmode="numeric" oninput="updateField('${it.id}','chapter',this.value)">
+        </div>
+        <div style="flex:1; min-width:60px;">
+          <span class="field-label">시작 절</span>
+          <input class="field" value="${it.vStart}" inputmode="numeric" oninput="updateField('${it.id}','vStart',this.value)">
+        </div>
+        <div style="flex:1; min-width:60px;">
+          <span class="field-label">끝 절</span>
+          <input class="field" value="${it.vEnd}" inputmode="numeric" oninput="updateField('${it.id}','vEnd',this.value)">
+        </div>
+      </div>
+      <label class="paraphrase-row">
+        <input type="checkbox" ${it.isParaphrase ? 'checked' : ''} onchange="updateField('${it.id}','isParaphrase',this.checked)">
+        직접 인용이 아니라 본문 언급 (패러프레이즈)
+      </label>
+      <textarea class="content-area" oninput="updateField('${it.id}','content',this.value)">${escapeHtml(it.content)}</textarea>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function updateField(id, field, value) {
+  const it = state.items.find(x => x.id === id);
+  if (!it) return;
+  if (field === 'vStart' || field === 'vEnd') value = parseInt(value, 10) || 0;
+  it[field] = value;
+  if (field === 'book' || field === 'chapter') renderItems();
+  updateOutput();
+}
+
+function deleteItem(id) {
+  state.items = state.items.filter(x => x.id !== id);
+  renderItems();
+  updateOutput();
+}
+
+function addItem() {
+  state.items.push({ id: 'm' + Date.now() + Math.random().toString(36).slice(2, 6), book: '', chapter: '', vStart: 1, vEnd: 1, content: '', isParaphrase: false });
+  renderItems();
+  updateOutput();
+}
+
+function buildOutputText() {
+  if (state.items.length === 0) return '';
+  return state.items.map((it, idx) => {
+    const n = idx + 1;
+    const verseLabel = (it.vEnd && it.vEnd !== it.vStart) ? `${it.vStart} - ${it.vEnd}절` : `${it.vStart}절`;
+    const title = `**${n}. ${it.book} ${it.chapter}장 ${verseLabel}**` + (it.isParaphrase ? ' (직접 인용은 아니고 본문 언급)' : '');
+    return title + '\n' + (it.content || '').trim();
+  }).join('\n\n');
+}
+
+function updateOutput() {
+  const box = document.getElementById('output-box');
+  const text = buildOutputText();
+  box.textContent = text || '';
+  if (!text) box.innerHTML = '<div class="empty-msg">항목을 추가하면 결과가 여기에 표시됩니다.</div>';
+}
+
+async function copyOutput() {
+  const text = buildOutputText();
+  if (!text) { alert('복사할 내용이 없습니다.'); return; }
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('✅ 클립보드에 복사되었습니다.');
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('✅ 클립보드에 복사되었습니다.');
+  }
+}
+
+function downloadOutput() {
+  const text = buildOutputText();
+  if (!text) { alert('다운로드할 내용이 없습니다.'); return; }
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '성경인용_추출결과.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function toggleDebug() {
+  const box = document.getElementById('debug-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+function renderDebug() {
+  document.getElementById('debug-box').textContent = state.rawParagraphs.map(stripMarkers).join('\n\n');
+}
+</script>
+</body>
+</html>
