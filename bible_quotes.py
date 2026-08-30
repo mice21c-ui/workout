@@ -320,6 +320,19 @@ def build_output_text(items):
     return "\n\n".join(blocks)
 
 
+def _clean_dropped_path(raw):
+    """터미널에 파일을 끌어다 놓았을 때 붙는 장식을 제거합니다.
+
+    PowerShell은 '& "경로"' 형태로 붙이고, cmd/일반 터미널은 따옴표만 붙입니다.
+    """
+    s = raw.strip()
+    if s.startswith("&"):
+        s = s[1:].strip()
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in ("'", '"'):
+        s = s[1:-1]
+    return s.strip()
+
+
 def _finish(message, interactive, code=1):
     print(message, file=sys.stderr)
     if interactive:
@@ -337,7 +350,7 @@ def main():
     docx_path = args.docx_path
     if interactive:
         raw = input("설교문 .docx 파일 경로를 입력하거나, 파일을 이 창에 끌어다 놓은 뒤 Enter를 누르세요: ")
-        docx_path = raw.strip().strip('"').strip("'")
+        docx_path = _clean_dropped_path(raw)
 
     if not docx_path or not os.path.isfile(docx_path):
         _finish(f"파일을 찾을 수 없습니다: {docx_path}", interactive)
