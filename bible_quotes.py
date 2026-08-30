@@ -360,12 +360,12 @@ def build_output_text(items):
     if not items:
         return ""
     blocks = []
-    for i, it in enumerate(items, start=1):
+    for it in items:
         if it["v_end"] and it["v_end"] != it["v_start"]:
             verse_label = f"{it['v_start']} - {it['v_end']}절"
         else:
             verse_label = f"{it['v_start']}절"
-        title = f"**{i}. {it['book']} {it['chapter']}장 {verse_label}**"
+        title = f"{it['book']} {it['chapter']}장 {verse_label}"
         if it["is_paraphrase"]:
             title += " (직접 인용은 아니고 본문 언급)"
         blocks.append(title + "\n" + it["content"].strip())

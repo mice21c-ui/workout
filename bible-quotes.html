@@ -624,10 +624,9 @@ function addItem() {
 
 function buildOutputText() {
   if (state.items.length === 0) return '';
-  return state.items.map((it, idx) => {
-    const n = idx + 1;
+  return state.items.map((it) => {
     const verseLabel = (it.vEnd && it.vEnd !== it.vStart) ? `${it.vStart} - ${it.vEnd}절` : `${it.vStart}절`;
-    const title = `**${n}. ${it.book} ${it.chapter}장 ${verseLabel}**` + (it.isParaphrase ? ' (직접 인용은 아니고 본문 언급)' : '');
+    const title = `${it.book} ${it.chapter}장 ${verseLabel}` + (it.isParaphrase ? ' (직접 인용은 아니고 본문 언급)' : '');
     return title + '\n' + (it.content || '').trim();
   }).join('\n\n');
 }
