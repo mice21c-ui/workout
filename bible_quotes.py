@@ -10,6 +10,7 @@
 """
 
 import argparse
+import os
 import re
 import sys
 
@@ -319,15 +320,31 @@ def build_output_text(items):
     return "\n\n".join(blocks)
 
 
+def _finish(message, interactive, code=1):
+    print(message, file=sys.stderr)
+    if interactive:
+        input("\nEnter를 누르면 창이 닫힙니다...")
+    sys.exit(code)
+
+
 def main():
     parser = argparse.ArgumentParser(description="설교문 .docx에서 성경 인용을 추출합니다.")
-    parser.add_argument("docx_path", help="설교문 .docx 파일 경로")
-    parser.add_argument("-o", "--output", help="결과를 저장할 .txt 파일 경로 (생략 시 화면에만 출력)")
+    parser.add_argument("docx_path", nargs="?", help="설교문 .docx 파일 경로 (생략하면 실행 중 입력받습니다)")
+    parser.add_argument("-o", "--output", help="결과를 저장할 .txt 파일 경로 (생략 시 자동 저장 위치를 사용)")
     args = parser.parse_args()
 
-    paragraphs = docx_to_paragraphs(args.docx_path)
+    interactive = args.docx_path is None
+    docx_path = args.docx_path
+    if interactive:
+        raw = input("설교문 .docx 파일 경로를 입력하거나, 파일을 이 창에 끌어다 놓은 뒤 Enter를 누르세요: ")
+        docx_path = raw.strip().strip('"').strip("'")
+
+    if not docx_path or not os.path.isfile(docx_path):
+        _finish(f"파일을 찾을 수 없습니다: {docx_path}", interactive)
+
+    paragraphs = docx_to_paragraphs(docx_path)
     if not paragraphs:
-        sys.exit("문서에서 텍스트를 찾을 수 없습니다.")
+        _finish("문서에서 텍스트를 찾을 수 없습니다.", interactive)
 
     ctx = detect_header_context(paragraphs)
     if ctx["book"]:
@@ -338,15 +355,22 @@ def main():
 
     items = extract_citations(paragraphs, ctx)
     if not items:
-        sys.exit("인용을 찾지 못했습니다.")
+        _finish("인용을 찾지 못했습니다.", interactive)
 
     output = build_output_text(items)
     print(output)
 
-    if args.output:
-        with open(args.output, "w", encoding="utf-8") as f:
+    out_path = args.output
+    if not out_path and interactive:
+        base, _ = os.path.splitext(docx_path)
+        out_path = base + "_인용정리.txt"
+    if out_path:
+        with open(out_path, "w", encoding="utf-8") as f:
             f.write(output)
-        print(f"\n[저장됨] {args.output}", file=sys.stderr)
+        print(f"\n[저장됨] {out_path}", file=sys.stderr)
+
+    if interactive:
+        input("\n완료했습니다. Enter를 누르면 창이 닫힙니다...")
 
 
 if __name__ == "__main__":
